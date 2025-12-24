@@ -3,35 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hand-drawn Cube Split Variations</title>
+    <title>Halfcubes - Cube Split Animations</title>
     <style>
-        body {
+        * {
             margin: 0;
-            height: 100vh;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             background: #fafaf8;
             font-family: 'Courier New', monospace;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+            max-width: 1200px;
+            width: 100%;
         }
 
         canvas {
             border: 1px solid #eee;
             cursor: pointer;
+            background: white;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        button {
+            padding: 12px 16px;
+            background: white;
+            border: 2px solid #2a2a2a;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background: #f0f0f0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.active {
+            background: #2a2a2a;
+            color: white;
         }
 
         .instruction {
-            margin-top: 15px;
             color: #666;
             font-size: 14px;
+            text-align: center;
+        }
+
+        @media (max-width: 600px) {
+            canvas {
+                width: 100%;
+                height: auto;
+            }
+
+            .controls {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
     </style>
 </head>
 <body>
-    <canvas id="canvas" width="800" height="400"></canvas>
+    <div class="container">
+        <canvas id="canvas" width="800" height="500"></canvas>
 
-    <div class="instruction">Click to split with random variation</div>
+        <div class="controls">
+            <button onclick="playAnimation('horizontal')">Horizontal</button>
+            <button onclick="playAnimation('vertical')">Vertical</button>
+            <button onclick="playAnimation('diagonal')">Diagonal</button>
+            <button onclick="playAnimation('explode')">Explode</button>
+            <button onclick="playAnimation('book')">Book</button>
+            <button onclick="playAnimation('triplesplit')">Triple Split</button>
+            <button onclick="playAnimation('slide')">Slide Apart</button>
+            <button onclick="playAnimation('tent')">Tent Collapse</button>
+            <button onclick="playAnimation('pinch')">Pinch</button>
+            <button onclick="playAnimation('wave')">Wave Split</button>
+            <button onclick="playAnimation('diagonalslice')">Diagonal Slice</button>
+            <button onclick="playAnimation('scoop')">Scoop</button>
+            <button onclick="playAnimation('drawer')">Drawer</button>
+            <button onclick="playAnimation('random')" style="grid-column: 1 / -1; background: #2a2a2a; color: white;">Random</button>
+        </div>
+
+        <div class="instruction">Click any button to see the animation • Click canvas to toggle</div>
+    </div>
 
     <script>
         const canvas = document.getElementById('canvas');
@@ -40,7 +121,24 @@
         let progress = 0;
         let targetProgress = 0;
         let mode = 'horizontal';
-        const modes = ['horizontal', 'vertical', 'diagonal', 'explode', 'book'];
+        const modes = ['horizontal', 'vertical', 'diagonal', 'explode', 'book',
+                       'triplesplit', 'slide', 'tent', 'pinch', 'wave',
+                       'diagonalslice', 'scoop', 'drawer'];
+
+        function playAnimation(animMode) {
+            if (animMode === 'random') {
+                mode = modes[Math.floor(Math.random() * modes.length)];
+            } else {
+                mode = animMode;
+            }
+            targetProgress = targetProgress === 0 ? 1 : 0;
+
+            // Update button states
+            document.querySelectorAll('button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
 
         // Hand-drawn line function with slight wobble
         function drawWobblyLine(x1, y1, x2, y2) {
@@ -63,6 +161,36 @@
             ctx.stroke();
         }
 
+        // Wobbly curve for wave effect
+        function drawWobblyCurve(x1, y1, x2, y2, amplitude) {
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+
+            const steps = 30;
+            for (let i = 1; i <= steps; i++) {
+                const t = i / steps;
+                const x = x1 + (x2 - x1) * t;
+                const y = y1 + (y2 - y1) * t;
+                const wave = Math.sin(t * Math.PI * 2) * amplitude;
+                const wobble = Math.sin(t * Math.PI * 8) * 0.3;
+
+                // Perpendicular offset
+                const dx = x2 - x1;
+                const dy = y2 - y1;
+                const len = Math.sqrt(dx * dx + dy * dy);
+                const perpX = -dy / len;
+                const perpY = dx / len;
+
+                ctx.lineTo(x + perpX * wave + wobble, y + perpY * wave + wobble);
+            }
+
+            ctx.strokeStyle = '#2a2a2a';
+            ctx.lineWidth = 2.5;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.stroke();
+        }
+
         function drawCube(offsetX, offsetY, size) {
             const depth = size * 0.6;
 
@@ -72,7 +200,7 @@
             drawWobblyLine(offsetX + size, offsetY + size, offsetX, offsetY + size);
             drawWobblyLine(offsetX, offsetY + size, offsetX, offsetY);
 
-            // Back face (top edges)
+            // Back edges
             drawWobblyLine(offsetX, offsetY, offsetX + depth, offsetY - depth);
             drawWobblyLine(offsetX + size, offsetY, offsetX + size + depth, offsetY - depth);
 
@@ -85,153 +213,480 @@
             drawWobblyLine(offsetX + depth, offsetY - depth, offsetX + size + depth, offsetY - depth);
         }
 
-        function drawHalfCubeHorizontal(offsetX, offsetY, size, isLeft) {
+        // Animation: Horizontal split
+        function drawHorizontalSplit(centerX, centerY, size, splitAmount) {
             const depth = size * 0.6;
             const halfSize = size / 2;
 
-            if (isLeft) {
-                drawWobblyLine(offsetX, offsetY, offsetX + halfSize, offsetY);
-                drawWobblyLine(offsetX + halfSize, offsetY, offsetX + halfSize, offsetY + size);
-                drawWobblyLine(offsetX + halfSize, offsetY + size, offsetX, offsetY + size);
-                drawWobblyLine(offsetX, offsetY + size, offsetX, offsetY);
+            // Left half
+            const leftX = centerX - size / 2 - splitAmount;
+            drawWobblyLine(leftX, centerY, leftX + halfSize, centerY);
+            drawWobblyLine(leftX + halfSize, centerY, leftX + halfSize, centerY + size);
+            drawWobblyLine(leftX + halfSize, centerY + size, leftX, centerY + size);
+            drawWobblyLine(leftX, centerY + size, leftX, centerY);
+            drawWobblyLine(leftX, centerY, leftX + depth, centerY - depth);
+            drawWobblyLine(leftX + depth, centerY - depth, leftX + halfSize + depth, centerY - depth);
+            drawWobblyLine(leftX + halfSize + depth, centerY - depth, leftX + halfSize, centerY);
+            drawWobblyLine(leftX + halfSize, centerY, leftX + halfSize + depth, centerY - depth);
+            drawWobblyLine(leftX + halfSize + depth, centerY - depth, leftX + halfSize + depth, centerY + size - depth);
+            drawWobblyLine(leftX + halfSize + depth, centerY + size - depth, leftX + halfSize, centerY + size);
 
-                drawWobblyLine(offsetX, offsetY, offsetX + depth, offsetY - depth);
-                drawWobblyLine(offsetX + depth, offsetY - depth, offsetX + halfSize + depth, offsetY - depth);
-                drawWobblyLine(offsetX + halfSize + depth, offsetY - depth, offsetX + halfSize, offsetY);
-
-                drawWobblyLine(offsetX + halfSize, offsetY, offsetX + halfSize + depth, offsetY - depth);
-                drawWobblyLine(offsetX + halfSize + depth, offsetY - depth, offsetX + halfSize + depth, offsetY + size - depth);
-                drawWobblyLine(offsetX + halfSize + depth, offsetY + size - depth, offsetX + halfSize, offsetY + size);
-            } else {
-                drawWobblyLine(offsetX, offsetY, offsetX + halfSize, offsetY);
-                drawWobblyLine(offsetX + halfSize, offsetY, offsetX + halfSize, offsetY + size);
-                drawWobblyLine(offsetX + halfSize, offsetY + size, offsetX, offsetY + size);
-                drawWobblyLine(offsetX, offsetY + size, offsetX, offsetY);
-
-                drawWobblyLine(offsetX, offsetY, offsetX + depth, offsetY - depth);
-                drawWobblyLine(offsetX + depth, offsetY - depth, offsetX + halfSize + depth, offsetY - depth);
-                drawWobblyLine(offsetX + halfSize + depth, offsetY - depth, offsetX + halfSize, offsetY);
-
-                drawWobblyLine(offsetX + halfSize, offsetY, offsetX + halfSize + depth, offsetY - depth);
-                drawWobblyLine(offsetX + halfSize + depth, offsetY - depth, offsetX + halfSize + depth, offsetY + size - depth);
-                drawWobblyLine(offsetX + halfSize + depth, offsetY + size - depth, offsetX + halfSize, offsetY + size);
-            }
+            // Right half
+            const rightX = centerX + splitAmount;
+            drawWobblyLine(rightX, centerY, rightX + halfSize, centerY);
+            drawWobblyLine(rightX + halfSize, centerY, rightX + halfSize, centerY + size);
+            drawWobblyLine(rightX + halfSize, centerY + size, rightX, centerY + size);
+            drawWobblyLine(rightX, centerY + size, rightX, centerY);
+            drawWobblyLine(rightX, centerY, rightX + depth, centerY - depth);
+            drawWobblyLine(rightX + depth, centerY - depth, rightX + halfSize + depth, centerY - depth);
+            drawWobblyLine(rightX + halfSize + depth, centerY - depth, rightX + halfSize, centerY);
+            drawWobblyLine(rightX + halfSize, centerY, rightX + halfSize + depth, centerY - depth);
+            drawWobblyLine(rightX + halfSize + depth, centerY - depth, rightX + halfSize + depth, centerY + size - depth);
+            drawWobblyLine(rightX + halfSize + depth, centerY + size - depth, rightX + halfSize, centerY + size);
         }
 
-        function drawHalfCubeVertical(offsetX, offsetY, size, isTop) {
+        // Animation: Vertical split
+        function drawVerticalSplit(centerX, centerY, size, splitAmount) {
             const depth = size * 0.6;
             const halfSize = size / 2;
 
-            if (isTop) {
-                drawWobblyLine(offsetX, offsetY, offsetX + size, offsetY);
-                drawWobblyLine(offsetX + size, offsetY, offsetX + size, offsetY + halfSize);
-                drawWobblyLine(offsetX + size, offsetY + halfSize, offsetX, offsetY + halfSize);
-                drawWobblyLine(offsetX, offsetY + halfSize, offsetX, offsetY);
+            // Top half
+            const topY = centerY - splitAmount;
+            drawWobblyLine(centerX, topY, centerX + size, topY);
+            drawWobblyLine(centerX + size, topY, centerX + size, topY + halfSize);
+            drawWobblyLine(centerX + size, topY + halfSize, centerX, topY + halfSize);
+            drawWobblyLine(centerX, topY + halfSize, centerX, topY);
+            drawWobblyLine(centerX, topY, centerX + depth, topY - depth);
+            drawWobblyLine(centerX + size, topY, centerX + size + depth, topY - depth);
+            drawWobblyLine(centerX + size, topY, centerX + size + depth, topY - depth);
+            drawWobblyLine(centerX + size + depth, topY - depth, centerX + size + depth, topY + halfSize - depth);
+            drawWobblyLine(centerX + size + depth, topY + halfSize - depth, centerX + size, topY + halfSize);
+            drawWobblyLine(centerX + depth, topY - depth, centerX + size + depth, topY - depth);
+            drawWobblyLine(centerX, topY + halfSize, centerX + depth, topY + halfSize - depth);
 
-                drawWobblyLine(offsetX, offsetY, offsetX + depth, offsetY - depth);
-                drawWobblyLine(offsetX + size, offsetY, offsetX + size + depth, offsetY - depth);
-
-                drawWobblyLine(offsetX + size, offsetY, offsetX + size + depth, offsetY - depth);
-                drawWobblyLine(offsetX + size + depth, offsetY - depth, offsetX + size + depth, offsetY + halfSize - depth);
-                drawWobblyLine(offsetX + size + depth, offsetY + halfSize - depth, offsetX + size, offsetY + halfSize);
-
-                drawWobblyLine(offsetX + depth, offsetY - depth, offsetX + size + depth, offsetY - depth);
-
-                // Add the diagonal line on top surface connecting the split
-                drawWobblyLine(offsetX, offsetY + halfSize, offsetX + depth, offsetY + halfSize - depth);
-            } else {
-                drawWobblyLine(offsetX, offsetY, offsetX + size, offsetY);
-                drawWobblyLine(offsetX + size, offsetY, offsetX + size, offsetY + halfSize);
-                drawWobblyLine(offsetX + size, offsetY + halfSize, offsetX, offsetY + halfSize);
-                drawWobblyLine(offsetX, offsetY + halfSize, offsetX, offsetY);
-
-                drawWobblyLine(offsetX + size, offsetY, offsetX + size + depth, offsetY - depth);
-                drawWobblyLine(offsetX + size + depth, offsetY - depth, offsetX + size + depth, offsetY + halfSize - depth);
-                drawWobblyLine(offsetX + size + depth, offsetY + halfSize - depth, offsetX + size, offsetY + halfSize);
-
-                // Add the diagonal line on top surface connecting the split
-                drawWobblyLine(offsetX, offsetY, offsetX + depth, offsetY - depth);
-            }
+            // Bottom half
+            const bottomY = centerY + size/2 + splitAmount;
+            drawWobblyLine(centerX, bottomY, centerX + size, bottomY);
+            drawWobblyLine(centerX + size, bottomY, centerX + size, bottomY + halfSize);
+            drawWobblyLine(centerX + size, bottomY + halfSize, centerX, bottomY + halfSize);
+            drawWobblyLine(centerX, bottomY + halfSize, centerX, bottomY);
+            drawWobblyLine(centerX + size, bottomY, centerX + size + depth, bottomY - depth);
+            drawWobblyLine(centerX + size + depth, bottomY - depth, centerX + size + depth, bottomY + halfSize - depth);
+            drawWobblyLine(centerX + size + depth, bottomY + halfSize - depth, centerX + size, bottomY + halfSize);
+            drawWobblyLine(centerX, bottomY, centerX + depth, bottomY - depth);
         }
 
-        function drawDiagonalHalf(offsetX, offsetY, size, isLeft) {
+        // Animation: Diagonal
+        function drawDiagonal(centerX, centerY, size, splitAmount) {
             const depth = size * 0.6;
 
-            if (isLeft) {
-                drawWobblyLine(offsetX, offsetY, offsetX + size/2, offsetY);
-                drawWobblyLine(offsetX + size/2, offsetY, offsetX, offsetY + size);
-                drawWobblyLine(offsetX, offsetY + size, offsetX, offsetY);
+            // Left piece
+            const leftX = centerX - splitAmount * 0.7;
+            const leftY = centerY - splitAmount * 0.3;
+            drawWobblyLine(leftX, leftY, leftX + size/2, leftY);
+            drawWobblyLine(leftX + size/2, leftY, leftX, leftY + size);
+            drawWobblyLine(leftX, leftY + size, leftX, leftY);
+            drawWobblyLine(leftX, leftY, leftX + depth, leftY - depth);
+            drawWobblyLine(leftX + depth, leftY - depth, leftX + size/2 + depth, leftY - depth);
+            drawWobblyLine(leftX + size/2 + depth, leftY - depth, leftX + size/2, leftY);
+            drawWobblyLine(leftX + size/2, leftY, leftX + size/2 + depth, leftY - depth);
+            drawWobblyLine(leftX + size/2 + depth, leftY - depth, leftX + depth, leftY + size - depth);
+            drawWobblyLine(leftX + depth, leftY + size - depth, leftX, leftY + size);
 
-                drawWobblyLine(offsetX, offsetY, offsetX + depth, offsetY - depth);
-                drawWobblyLine(offsetX + depth, offsetY - depth, offsetX + size/2 + depth, offsetY - depth);
-                drawWobblyLine(offsetX + size/2 + depth, offsetY - depth, offsetX + size/2, offsetY);
-
-                drawWobblyLine(offsetX + size/2, offsetY, offsetX + size/2 + depth, offsetY - depth);
-                drawWobblyLine(offsetX + size/2 + depth, offsetY - depth, offsetX + depth, offsetY + size - depth);
-                drawWobblyLine(offsetX + depth, offsetY + size - depth, offsetX, offsetY + size);
-            } else {
-                drawWobblyLine(offsetX + size/2, offsetY, offsetX + size, offsetY);
-                drawWobblyLine(offsetX + size, offsetY, offsetX + size, offsetY + size);
-                drawWobblyLine(offsetX + size, offsetY + size, offsetX, offsetY + size);
-                drawWobblyLine(offsetX, offsetY + size, offsetX + size/2, offsetY);
-
-                drawWobblyLine(offsetX + size/2, offsetY, offsetX + size/2 + depth, offsetY - depth);
-                drawWobblyLine(offsetX + size/2 + depth, offsetY - depth, offsetX + size + depth, offsetY - depth);
-                drawWobblyLine(offsetX + size + depth, offsetY - depth, offsetX + size, offsetY);
-
-                drawWobblyLine(offsetX + size, offsetY, offsetX + size + depth, offsetY - depth);
-                drawWobblyLine(offsetX + size + depth, offsetY - depth, offsetX + size + depth, offsetY + size - depth);
-                drawWobblyLine(offsetX + size + depth, offsetY + size - depth, offsetX + size, offsetY + size);
-            }
+            // Right piece
+            const rightX = centerX + splitAmount * 0.7;
+            const rightY = centerY + splitAmount * 0.3;
+            drawWobblyLine(rightX + size/2, rightY, rightX + size, rightY);
+            drawWobblyLine(rightX + size, rightY, rightX + size, rightY + size);
+            drawWobblyLine(rightX + size, rightY + size, rightX, rightY + size);
+            drawWobblyLine(rightX, rightY + size, rightX + size/2, rightY);
+            drawWobblyLine(rightX + size/2, rightY, rightX + size/2 + depth, rightY - depth);
+            drawWobblyLine(rightX + size/2 + depth, rightY - depth, rightX + size + depth, rightY - depth);
+            drawWobblyLine(rightX + size + depth, rightY - depth, rightX + size, rightY);
+            drawWobblyLine(rightX + size, rightY, rightX + size + depth, rightY - depth);
+            drawWobblyLine(rightX + size + depth, rightY - depth, rightX + size + depth, rightY + size - depth);
+            drawWobblyLine(rightX + size + depth, rightY + size - depth, rightX + size, rightY + size);
         }
 
-        function drawBookHalf(offsetX, offsetY, size, isLeft, openAmount) {
+        // Animation: Explode
+        function drawExplode(centerX, centerY, size, explode) {
             const depth = size * 0.6;
             const halfSize = size / 2;
 
-            // Calculate the opening - halves rotate around the top center edge
-            const angle = openAmount * 45 * Math.PI / 180; // Up to 45 degrees
+            // Left half - moving left and up
+            const leftX = centerX - halfSize - explode;
+            const leftY = centerY - explode * 0.5;
+            drawWobblyLine(leftX, leftY, leftX + halfSize, leftY);
+            drawWobblyLine(leftX + halfSize, leftY, leftX + halfSize, leftY + size);
+            drawWobblyLine(leftX + halfSize, leftY + size, leftX, leftY + size);
+            drawWobblyLine(leftX, leftY + size, leftX, leftY);
+            drawWobblyLine(leftX, leftY, leftX + depth, leftY - depth);
+            drawWobblyLine(leftX + depth, leftY - depth, leftX + halfSize + depth, leftY - depth);
+            drawWobblyLine(leftX + halfSize + depth, leftY - depth, leftX + halfSize, leftY);
+            drawWobblyLine(leftX + halfSize, leftY, leftX + halfSize + depth, leftY - depth);
+            drawWobblyLine(leftX + halfSize + depth, leftY - depth, leftX + halfSize + depth, leftY + size - depth);
+            drawWobblyLine(leftX + halfSize + depth, leftY + size - depth, leftX + halfSize, leftY + size);
 
-            if (isLeft) {
-                // Left half rotates counter-clockwise
-                const bottomShift = halfSize * Math.sin(angle);
-                const depthShift = halfSize * (1 - Math.cos(angle));
+            // Right half - moving right and down
+            const rightX = centerX + explode;
+            const rightY = centerY + explode * 0.5;
+            drawWobblyLine(rightX, rightY, rightX + halfSize, rightY);
+            drawWobblyLine(rightX + halfSize, rightY, rightX + halfSize, rightY + size);
+            drawWobblyLine(rightX + halfSize, rightY + size, rightX, rightY + size);
+            drawWobblyLine(rightX, rightY + size, rightX, rightY);
+            drawWobblyLine(rightX, rightY, rightX + depth, rightY - depth);
+            drawWobblyLine(rightX + depth, rightY - depth, rightX + halfSize + depth, rightY - depth);
+            drawWobblyLine(rightX + halfSize + depth, rightY - depth, rightX + halfSize, rightY);
+            drawWobblyLine(rightX + halfSize, rightY, rightX + halfSize + depth, rightY - depth);
+            drawWobblyLine(rightX + halfSize + depth, rightY - depth, rightX + halfSize + depth, rightY + size - depth);
+            drawWobblyLine(rightX + halfSize + depth, rightY + size - depth, rightX + halfSize, rightY + size);
+        }
 
-                // Front face
-                drawWobblyLine(offsetX, offsetY, offsetX + halfSize, offsetY);
-                drawWobblyLine(offsetX + halfSize, offsetY, offsetX + halfSize - bottomShift, offsetY + size);
-                drawWobblyLine(offsetX + halfSize - bottomShift, offsetY + size, offsetX, offsetY + size);
-                drawWobblyLine(offsetX, offsetY + size, offsetX, offsetY);
+        // Animation: Book
+        function drawBook(centerX, centerY, size, bookProgress) {
+            const depth = size * 0.6;
+            const halfSize = size / 2;
+            const angle = bookProgress * 45 * Math.PI / 180;
+            const bookSplit = bookProgress * 80 * 0.4;
+            const depthShift = halfSize * (1 - Math.cos(angle));
+            const bottomShift = halfSize * Math.sin(angle);
 
-                // Top face (shared hinge edge)
-                drawWobblyLine(offsetX, offsetY, offsetX + depth - depthShift, offsetY - depth);
-                drawWobblyLine(offsetX + depth - depthShift, offsetY - depth, offsetX + halfSize + depth - depthShift, offsetY - depth);
-                drawWobblyLine(offsetX + halfSize + depth - depthShift, offsetY - depth, offsetX + halfSize, offsetY);
+            // Left half
+            const leftX = centerX - halfSize - bookSplit;
+            drawWobblyLine(leftX, centerY, leftX + halfSize, centerY);
+            drawWobblyLine(leftX + halfSize, centerY, leftX + halfSize - bottomShift, centerY + size);
+            drawWobblyLine(leftX + halfSize - bottomShift, centerY + size, leftX, centerY + size);
+            drawWobblyLine(leftX, centerY + size, leftX, centerY);
+            drawWobblyLine(leftX, centerY, leftX + depth - depthShift, centerY - depth);
+            drawWobblyLine(leftX + depth - depthShift, centerY - depth, leftX + halfSize + depth - depthShift, centerY - depth);
+            drawWobblyLine(leftX + halfSize + depth - depthShift, centerY - depth, leftX + halfSize, centerY);
+            drawWobblyLine(leftX + halfSize, centerY, leftX + halfSize + depth - depthShift, centerY - depth);
+            drawWobblyLine(leftX + halfSize + depth - depthShift, centerY - depth, leftX + halfSize + depth - depthShift - bottomShift, centerY + size - depth);
+            drawWobblyLine(leftX + halfSize + depth - depthShift - bottomShift, centerY + size - depth, leftX + halfSize - bottomShift, centerY + size);
 
-                // Side face
-                drawWobblyLine(offsetX + halfSize, offsetY, offsetX + halfSize + depth - depthShift, offsetY - depth);
-                drawWobblyLine(offsetX + halfSize + depth - depthShift, offsetY - depth, offsetX + halfSize + depth - depthShift - bottomShift, offsetY + size - depth);
-                drawWobblyLine(offsetX + halfSize + depth - depthShift - bottomShift, offsetY + size - depth, offsetX + halfSize - bottomShift, offsetY + size);
-            } else {
-                // Right half rotates clockwise
-                const bottomShift = halfSize * Math.sin(angle);
-                const depthShift = halfSize * (1 - Math.cos(angle));
+            // Right half
+            const rightX = centerX - halfSize + halfSize + bookSplit;
+            drawWobblyLine(rightX, centerY, rightX + halfSize, centerY);
+            drawWobblyLine(rightX + halfSize, centerY, rightX + halfSize, centerY + size);
+            drawWobblyLine(rightX + halfSize, centerY + size, rightX + bottomShift, centerY + size);
+            drawWobblyLine(rightX + bottomShift, centerY + size, rightX, centerY);
+            drawWobblyLine(rightX, centerY, rightX + depth - depthShift, centerY - depth);
+            drawWobblyLine(rightX + depth - depthShift, centerY - depth, rightX + halfSize + depth, centerY - depth);
+            drawWobblyLine(rightX + halfSize + depth, centerY - depth, rightX + halfSize, centerY);
+            drawWobblyLine(rightX + halfSize, centerY, rightX + halfSize + depth, centerY - depth);
+            drawWobblyLine(rightX + halfSize + depth, centerY - depth, rightX + halfSize + depth, centerY + size - depth);
+            drawWobblyLine(rightX + halfSize + depth, centerY + size - depth, rightX + halfSize, centerY + size);
 
-                // Front face
-                drawWobblyLine(offsetX, offsetY, offsetX + halfSize, offsetY);
-                drawWobblyLine(offsetX + halfSize, offsetY, offsetX + halfSize, offsetY + size);
-                drawWobblyLine(offsetX + halfSize, offsetY + size, offsetX + bottomShift, offsetY + size);
-                drawWobblyLine(offsetX + bottomShift, offsetY + size, offsetX, offsetY);
+            // Hinge connection
+            drawWobblyLine(
+                centerX - bookSplit + depth - depthShift,
+                centerY - depth,
+                centerX + bookSplit + depth - depthShift,
+                centerY - depth
+            );
+        }
 
-                // Top face
-                drawWobblyLine(offsetX, offsetY, offsetX + depth - depthShift, offsetY - depth);
-                drawWobblyLine(offsetX + depth - depthShift, offsetY - depth, offsetX + halfSize + depth, offsetY - depth);
-                drawWobblyLine(offsetX + halfSize + depth, offsetY - depth, offsetX + halfSize, offsetY);
+        // Animation: Triple Split
+        function drawTripleSplit(centerX, centerY, size, splitAmount) {
+            const depth = size * 0.6;
+            const third = size / 3;
 
-                // Side face
-                drawWobblyLine(offsetX + halfSize, offsetY, offsetX + halfSize + depth, offsetY - depth);
-                drawWobblyLine(offsetX + halfSize + depth, offsetY - depth, offsetX + halfSize + depth, offsetY + size - depth);
-                drawWobblyLine(offsetX + halfSize + depth, offsetY + size - depth, offsetX + halfSize, offsetY + size);
+            // Left piece
+            const leftX = centerX - splitAmount;
+            drawWobblyLine(leftX, centerY, leftX + third, centerY);
+            drawWobblyLine(leftX + third, centerY, leftX + third, centerY + size);
+            drawWobblyLine(leftX + third, centerY + size, leftX, centerY + size);
+            drawWobblyLine(leftX, centerY + size, leftX, centerY);
+            drawWobblyLine(leftX, centerY, leftX + depth, centerY - depth);
+            drawWobblyLine(leftX + depth, centerY - depth, leftX + third + depth, centerY - depth);
+            drawWobblyLine(leftX + third + depth, centerY - depth, leftX + third, centerY);
+            drawWobblyLine(leftX + third, centerY, leftX + third + depth, centerY - depth);
+            drawWobblyLine(leftX + third + depth, centerY - depth, leftX + third + depth, centerY + size - depth);
+            drawWobblyLine(leftX + third + depth, centerY + size - depth, leftX + third, centerY + size);
+
+            // Middle piece
+            const midX = centerX + third;
+            drawWobblyLine(midX, centerY, midX + third, centerY);
+            drawWobblyLine(midX + third, centerY, midX + third, centerY + size);
+            drawWobblyLine(midX + third, centerY + size, midX, centerY + size);
+            drawWobblyLine(midX, centerY + size, midX, centerY);
+            drawWobblyLine(midX, centerY, midX + depth, centerY - depth);
+            drawWobblyLine(midX + depth, centerY - depth, midX + third + depth, centerY - depth);
+            drawWobblyLine(midX + third + depth, centerY - depth, midX + third, centerY);
+            drawWobblyLine(midX + third, centerY, midX + third + depth, centerY - depth);
+            drawWobblyLine(midX + third + depth, centerY - depth, midX + third + depth, centerY + size - depth);
+            drawWobblyLine(midX + third + depth, centerY + size - depth, midX + third, centerY + size);
+
+            // Right piece
+            const rightX = centerX + third * 2 + splitAmount;
+            drawWobblyLine(rightX, centerY, rightX + third, centerY);
+            drawWobblyLine(rightX + third, centerY, rightX + third, centerY + size);
+            drawWobblyLine(rightX + third, centerY + size, rightX, centerY + size);
+            drawWobblyLine(rightX, centerY + size, rightX, centerY);
+            drawWobblyLine(rightX, centerY, rightX + depth, centerY - depth);
+            drawWobblyLine(rightX + depth, centerY - depth, rightX + third + depth, centerY - depth);
+            drawWobblyLine(rightX + third + depth, centerY - depth, rightX + third, centerY);
+            drawWobblyLine(rightX + third, centerY, rightX + third + depth, centerY - depth);
+            drawWobblyLine(rightX + third + depth, centerY - depth, rightX + third + depth, centerY + size - depth);
+            drawWobblyLine(rightX + third + depth, centerY + size - depth, rightX + third, centerY + size);
+        }
+
+        // Animation: Slide Apart
+        function drawSlide(centerX, centerY, size, splitAmount) {
+            const depth = size * 0.6;
+            const third = size / 3;
+
+            // Top layer - slides left
+            const topY = centerY - splitAmount * 0.3;
+            const topX = centerX - splitAmount * 0.5;
+            drawWobblyLine(topX, topY, topX + size, topY);
+            drawWobblyLine(topX + size, topY, topX + size, topY + third);
+            drawWobblyLine(topX + size, topY + third, topX, topY + third);
+            drawWobblyLine(topX, topY + third, topX, topY);
+            drawWobblyLine(topX, topY, topX + depth, topY - depth);
+            drawWobblyLine(topX + size, topY, topX + size + depth, topY - depth);
+            drawWobblyLine(topX + size + depth, topY - depth, topX + size + depth, topY + third - depth);
+            drawWobblyLine(topX + size + depth, topY + third - depth, topX + size, topY + third);
+            drawWobblyLine(topX + depth, topY - depth, topX + size + depth, topY - depth);
+            drawWobblyLine(topX, topY + third, topX + depth, topY + third - depth);
+
+            // Middle layer - stays centered
+            const midY = centerY + third;
+            drawWobblyLine(centerX, midY, centerX + size, midY);
+            drawWobblyLine(centerX + size, midY, centerX + size, midY + third);
+            drawWobblyLine(centerX + size, midY + third, centerX, midY + third);
+            drawWobblyLine(centerX, midY + third, centerX, midY);
+            drawWobblyLine(centerX + size, midY, centerX + size + depth, midY - depth);
+            drawWobblyLine(centerX + size + depth, midY - depth, centerX + size + depth, midY + third - depth);
+            drawWobblyLine(centerX + size + depth, midY + third - depth, centerX + size, midY + third);
+            drawWobblyLine(centerX, midY, centerX + depth, midY - depth);
+            drawWobblyLine(centerX, midY + third, centerX + depth, midY + third - depth);
+
+            // Bottom layer - slides right
+            const botY = centerY + third * 2 + splitAmount * 0.3;
+            const botX = centerX + splitAmount * 0.5;
+            drawWobblyLine(botX, botY, botX + size, botY);
+            drawWobblyLine(botX + size, botY, botX + size, botY + third);
+            drawWobblyLine(botX + size, botY + third, botX, botY + third);
+            drawWobblyLine(botX, botY + third, botX, botY);
+            drawWobblyLine(botX + size, botY, botX + size + depth, botY - depth);
+            drawWobblyLine(botX + size + depth, botY - depth, botX + size + depth, botY + third - depth);
+            drawWobblyLine(botX + size + depth, botY + third - depth, botX + size, botY + third);
+            drawWobblyLine(botX, botY, botX + depth, botY - depth);
+        }
+
+        // Animation: Tent Collapse
+        function drawTent(centerX, centerY, size, collapseAmount) {
+            const depth = size * 0.6;
+            const collapse = collapseAmount * 40;
+
+            // Front face with collapsed top
+            drawWobblyLine(centerX, centerY, centerX + size, centerY);
+            drawWobblyLine(centerX + size, centerY, centerX + size, centerY + size);
+            drawWobblyLine(centerX + size, centerY + size, centerX, centerY + size);
+            drawWobblyLine(centerX, centerY + size, centerX, centerY);
+
+            // Collapsed top - forms a valley
+            const valleyDepth = collapse;
+            drawWobblyLine(centerX, centerY, centerX + depth, centerY - depth);
+            drawWobblyLine(centerX + size, centerY, centerX + size + depth, centerY - depth);
+
+            // Valley point in the middle
+            const midX = centerX + size/2 + depth/2;
+            const midY = centerY - depth + valleyDepth;
+
+            drawWobblyLine(centerX + depth, centerY - depth, midX, midY);
+            drawWobblyLine(midX, midY, centerX + size + depth, centerY - depth);
+
+            // Side face
+            drawWobblyLine(centerX + size, centerY, centerX + size + depth, centerY - depth);
+            drawWobblyLine(centerX + size + depth, centerY - depth, centerX + size + depth, centerY + size - depth);
+            drawWobblyLine(centerX + size + depth, centerY + size - depth, centerX + size, centerY + size);
+        }
+
+        // Animation: Pinch
+        function drawPinch(centerX, centerY, size, pinchAmount) {
+            const depth = size * 0.6;
+            const pinch = pinchAmount * 30;
+            const mid = size / 2;
+
+            // Front face with pinched middle
+            drawWobblyLine(centerX, centerY, centerX + size, centerY);
+            drawWobblyLine(centerX + size, centerY, centerX + size + pinch, centerY + mid);
+            drawWobblyLine(centerX + size + pinch, centerY + mid, centerX + size, centerY + size);
+            drawWobblyLine(centerX + size, centerY + size, centerX, centerY + size);
+            drawWobblyLine(centerX, centerY + size, centerX - pinch, centerY + mid);
+            drawWobblyLine(centerX - pinch, centerY + mid, centerX, centerY);
+
+            // Top face
+            drawWobblyLine(centerX, centerY, centerX + depth, centerY - depth);
+            drawWobblyLine(centerX + size, centerY, centerX + size + depth, centerY - depth);
+            drawWobblyLine(centerX + depth, centerY - depth, centerX + size + depth, centerY - depth);
+
+            // Side face with pinch
+            drawWobblyLine(centerX + size, centerY, centerX + size + depth, centerY - depth);
+            drawWobblyLine(centerX + size + depth, centerY - depth, centerX + size + depth + pinch, centerY + mid - depth);
+            drawWobblyLine(centerX + size + depth + pinch, centerY + mid - depth, centerX + size + depth, centerY + size - depth);
+            drawWobblyLine(centerX + size + depth, centerY + size - depth, centerX + size, centerY + size);
+            drawWobblyLine(centerX + size, centerY + size, centerX + size + pinch, centerY + mid);
+            drawWobblyLine(centerX + size + pinch, centerY + mid, centerX + size, centerY);
+        }
+
+        // Animation: Wave Split
+        function drawWave(centerX, centerY, size, waveAmount) {
+            const depth = size * 0.6;
+            const halfSize = size / 2;
+            const amplitude = waveAmount * 15;
+
+            // Left half
+            const leftX = centerX - waveAmount * 40;
+            drawWobblyLine(leftX, centerY, leftX + halfSize, centerY);
+            drawWobblyCurve(leftX + halfSize, centerY, leftX + halfSize, centerY + size, amplitude);
+            drawWobblyLine(leftX + halfSize, centerY + size, leftX, centerY + size);
+            drawWobblyLine(leftX, centerY + size, leftX, centerY);
+            drawWobblyLine(leftX, centerY, leftX + depth, centerY - depth);
+            drawWobblyLine(leftX + depth, centerY - depth, leftX + halfSize + depth, centerY - depth);
+            drawWobblyLine(leftX + halfSize + depth, centerY - depth, leftX + halfSize, centerY);
+            drawWobblyLine(leftX + halfSize, centerY, leftX + halfSize + depth, centerY - depth);
+            drawWobblyLine(leftX + halfSize + depth, centerY - depth, leftX + halfSize + depth, centerY + size - depth);
+            drawWobblyLine(leftX + halfSize + depth, centerY + size - depth, leftX + halfSize, centerY + size);
+
+            // Right half
+            const rightX = centerX + waveAmount * 40;
+            drawWobblyLine(rightX, centerY, rightX + halfSize, centerY);
+            drawWobblyLine(rightX + halfSize, centerY, rightX + halfSize, centerY + size);
+            drawWobblyLine(rightX + halfSize, centerY + size, rightX, centerY + size);
+            drawWobblyCurve(rightX, centerY + size, rightX, centerY, amplitude);
+            drawWobblyLine(rightX, centerY, rightX + depth, centerY - depth);
+            drawWobblyLine(rightX + depth, centerY - depth, rightX + halfSize + depth, centerY - depth);
+            drawWobblyLine(rightX + halfSize + depth, centerY - depth, rightX + halfSize, centerY);
+            drawWobblyLine(rightX + halfSize, centerY, rightX + halfSize + depth, centerY - depth);
+            drawWobblyLine(rightX + halfSize + depth, centerY - depth, rightX + halfSize + depth, centerY + size - depth);
+            drawWobblyLine(rightX + halfSize + depth, centerY + size - depth, rightX + halfSize, centerY + size);
+        }
+
+        // Animation: Diagonal Slice
+        function drawDiagonalSlice(centerX, centerY, size, sliceAmount) {
+            const depth = size * 0.6;
+            const offset = sliceAmount * 50;
+
+            // Bottom-left piece
+            const leftX = centerX - offset * 0.7;
+            const leftY = centerY + offset * 0.5;
+            drawWobblyLine(leftX, leftY, leftX, leftY + size);
+            drawWobblyLine(leftX, leftY + size, leftX + size, leftY + size);
+            drawWobblyLine(leftX + size, leftY + size, leftX, leftY);
+            drawWobblyLine(leftX, leftY, leftX + depth, leftY - depth);
+            drawWobblyLine(leftX + depth, leftY - depth, leftX + size + depth, leftY + size - depth);
+            drawWobblyLine(leftX + size + depth, leftY + size - depth, leftX + size, leftY + size);
+
+            // Top-right piece
+            const rightX = centerX + offset * 0.7;
+            const rightY = centerY - offset * 0.5;
+            drawWobblyLine(rightX, rightY, rightX + size, rightY);
+            drawWobblyLine(rightX + size, rightY, rightX + size, rightY + size);
+            drawWobblyLine(rightX + size, rightY + size, rightX, rightY);
+            drawWobblyLine(rightX, rightY, rightX + depth, rightY - depth);
+            drawWobblyLine(rightX + size, rightY, rightX + size + depth, rightY - depth);
+            drawWobblyLine(rightX + size + depth, rightY - depth, rightX + size + depth, rightY + size - depth);
+            drawWobblyLine(rightX + size + depth, rightY + size - depth, rightX + size, rightY + size);
+            drawWobblyLine(rightX + depth, rightY - depth, rightX + size + depth, rightY - depth);
+        }
+
+        // Animation: Scoop
+        function drawScoop(centerX, centerY, size, scoopAmount) {
+            const depth = size * 0.6;
+            const scoop = scoopAmount * 50;
+
+            // Main cube body
+            drawWobblyLine(centerX, centerY, centerX + size, centerY);
+            drawWobblyLine(centerX + size, centerY, centerX + size, centerY + size);
+            drawWobblyLine(centerX + size, centerY + size, centerX, centerY + size);
+            drawWobblyLine(centerX, centerY + size, centerX, centerY);
+
+            // Top face
+            drawWobblyLine(centerX, centerY, centerX + depth, centerY - depth);
+            drawWobblyLine(centerX + size, centerY, centerX + size + depth, centerY - depth);
+            drawWobblyLine(centerX + depth, centerY - depth, centerX + size + depth, centerY - depth);
+
+            // Side face
+            drawWobblyLine(centerX + size, centerY, centerX + size + depth, centerY - depth);
+            drawWobblyLine(centerX + size + depth, centerY - depth, centerX + size + depth, centerY + size - depth);
+            drawWobblyLine(centerX + size + depth, centerY + size - depth, centerX + size, centerY + size);
+
+            // Scooped out part (curved)
+            if (scoopAmount > 0.1) {
+                const scoopCenterX = centerX + size/2;
+                const scoopCenterY = centerY + size/2;
+                const scoopRadius = scoop;
+
+                ctx.beginPath();
+                ctx.arc(scoopCenterX + scoop * 0.3, scoopCenterY, scoopRadius * 0.8, Math.PI * 0.2, Math.PI * 0.8);
+                ctx.strokeStyle = '#2a2a2a';
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
+
+                // Additional curve lines for depth
+                ctx.beginPath();
+                ctx.arc(scoopCenterX + scoop * 0.3, scoopCenterY, scoopRadius * 0.5, Math.PI * 0.3, Math.PI * 0.7);
+                ctx.stroke();
+            }
+        }
+
+        // Animation: Drawer
+        function drawDrawer(centerX, centerY, size, drawerAmount) {
+            const depth = size * 0.6;
+            const pullOut = drawerAmount * 60;
+            const drawerSize = size * 0.4;
+            const drawerX = centerX + size/2 - drawerSize/2 + pullOut;
+            const drawerY = centerY + size/2 - drawerSize/2;
+
+            // Main cube body with hole
+            drawWobblyLine(centerX, centerY, centerX + size, centerY);
+            drawWobblyLine(centerX + size, centerY, centerX + size, centerY + size);
+            drawWobblyLine(centerX + size, centerY + size, centerX, centerY + size);
+            drawWobblyLine(centerX, centerY + size, centerX, centerY);
+
+            // Top face
+            drawWobblyLine(centerX, centerY, centerX + depth, centerY - depth);
+            drawWobblyLine(centerX + size, centerY, centerX + size + depth, centerY - depth);
+            drawWobblyLine(centerX + depth, centerY - depth, centerX + size + depth, centerY - depth);
+
+            // Side face
+            drawWobblyLine(centerX + size, centerY, centerX + size + depth, centerY - depth);
+            drawWobblyLine(centerX + size + depth, centerY - depth, centerX + size + depth, centerY + size - depth);
+            drawWobblyLine(centerX + size + depth, centerY + size - depth, centerX + size, centerY + size);
+
+            // Drawer outline on front face when closed
+            if (drawerAmount < 0.1) {
+                drawWobblyLine(centerX + size/2 - drawerSize/2, centerY + size/2 - drawerSize/2,
+                             centerX + size/2 + drawerSize/2, centerY + size/2 - drawerSize/2);
+                drawWobblyLine(centerX + size/2 + drawerSize/2, centerY + size/2 - drawerSize/2,
+                             centerX + size/2 + drawerSize/2, centerY + size/2 + drawerSize/2);
+                drawWobblyLine(centerX + size/2 + drawerSize/2, centerY + size/2 + drawerSize/2,
+                             centerX + size/2 - drawerSize/2, centerY + size/2 + drawerSize/2);
+                drawWobblyLine(centerX + size/2 - drawerSize/2, centerY + size/2 + drawerSize/2,
+                             centerX + size/2 - drawerSize/2, centerY + size/2 - drawerSize/2);
+            }
+
+            // Drawer pulled out
+            if (drawerAmount > 0.05) {
+                drawWobblyLine(drawerX, drawerY, drawerX + drawerSize, drawerY);
+                drawWobblyLine(drawerX + drawerSize, drawerY, drawerX + drawerSize, drawerY + drawerSize);
+                drawWobblyLine(drawerX + drawerSize, drawerY + drawerSize, drawerX, drawerY + drawerSize);
+                drawWobblyLine(drawerX, drawerY + drawerSize, drawerX, drawerY);
+
+                // Drawer depth
+                const drawerDepth = depth * 0.4;
+                drawWobblyLine(drawerX + drawerSize, drawerY, drawerX + drawerSize + drawerDepth, drawerY - drawerDepth);
+                drawWobblyLine(drawerX + drawerSize + drawerDepth, drawerY - drawerDepth,
+                             drawerX + drawerSize + drawerDepth, drawerY + drawerSize - drawerDepth);
+                drawWobblyLine(drawerX + drawerSize + drawerDepth, drawerY + drawerSize - drawerDepth,
+                             drawerX + drawerSize, drawerY + drawerSize);
+
+                // Handle
+                const handleY = drawerY + drawerSize/2;
+                drawWobblyLine(drawerX + drawerSize - 10, handleY - 3, drawerX + drawerSize - 10, handleY + 3);
             }
         }
 
@@ -240,60 +695,66 @@
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
+            const centerX = canvas.width / 2 - 70;
+            const centerY = canvas.height / 2 - 70;
             const size = 140;
             const maxSplit = 80;
             const splitAmount = progress * maxSplit;
 
-            if (progress < 0.1) {
-                drawCube(centerX - size / 2, centerY - size / 2 + 40, size);
+            if (progress < 0.05) {
+                drawCube(centerX, centerY, size);
             } else {
                 switch(mode) {
                     case 'horizontal':
-                        drawHalfCubeHorizontal(centerX - size / 2 - splitAmount, centerY - size / 2 + 40, size, true);
-                        drawHalfCubeHorizontal(centerX + splitAmount, centerY - size / 2 + 40, size, false);
+                        drawHorizontalSplit(centerX, centerY, size, splitAmount);
                         break;
 
                     case 'vertical':
-                        drawHalfCubeVertical(centerX - size / 2, centerY - size / 2 + 40 - splitAmount, size, true);
-                        drawHalfCubeVertical(centerX - size / 2, centerY - size / 2 + 40 + size/2 + splitAmount, size, false);
+                        drawVerticalSplit(centerX, centerY, size, splitAmount);
                         break;
 
                     case 'diagonal':
-                        drawDiagonalHalf(centerX - size / 2 - splitAmount * 0.7, centerY - size / 2 + 40 - splitAmount * 0.3, size, true);
-                        drawDiagonalHalf(centerX - size / 2 + splitAmount * 0.7, centerY - size / 2 + 40 + splitAmount * 0.3, size, false);
+                        drawDiagonal(centerX, centerY, size, splitAmount);
                         break;
 
                     case 'explode':
-                        const explode = progress * 60;
-                        drawHalfCubeHorizontal(centerX - size / 2 - explode, centerY - size / 2 + 40 - explode * 0.5, size, true);
-                        drawHalfCubeHorizontal(centerX + explode, centerY - size / 2 + 40 + explode * 0.5, size, false);
+                        drawExplode(centerX, centerY, size, progress * 60);
                         break;
 
                     case 'book':
-                        // Book opening - halves stay connected at top
-                        const bookSplit = splitAmount * 0.4;
-                        const depth = size * 0.6;
-                        const angle = progress * 45 * Math.PI / 180;
-                        const depthShift = (size / 2) * (1 - Math.cos(angle));
+                        drawBook(centerX, centerY, size, progress);
+                        break;
 
-                        drawBookHalf(centerX - size / 2 - bookSplit, centerY - size / 2 + 40, size, true, progress);
-                        drawBookHalf(centerX - size / 2 + size / 2 + bookSplit, centerY - size / 2 + 40, size, false, progress);
+                    case 'triplesplit':
+                        drawTripleSplit(centerX, centerY, size, splitAmount);
+                        break;
 
-                        // Draw the connecting hinge line at the top
-                        const hingeY = centerY - size / 2 + 40;
-                        const hingeDepthY = hingeY - depth;
-                        const leftHingeX = centerX - bookSplit;
-                        const rightHingeX = centerX + bookSplit;
+                    case 'slide':
+                        drawSlide(centerX, centerY, size, splitAmount);
+                        break;
 
-                        // Connecting line on top surface
-                        drawWobblyLine(
-                            leftHingeX + depth - depthShift,
-                            hingeDepthY,
-                            rightHingeX + depth - depthShift,
-                            hingeDepthY
-                        );
+                    case 'tent':
+                        drawTent(centerX, centerY, size, progress);
+                        break;
+
+                    case 'pinch':
+                        drawPinch(centerX, centerY, size, progress);
+                        break;
+
+                    case 'wave':
+                        drawWave(centerX, centerY, size, progress);
+                        break;
+
+                    case 'diagonalslice':
+                        drawDiagonalSlice(centerX, centerY, size, progress);
+                        break;
+
+                    case 'scoop':
+                        drawScoop(centerX, centerY, size, progress);
+                        break;
+
+                    case 'drawer':
+                        drawDrawer(centerX, centerY, size, progress);
                         break;
                 }
             }
@@ -306,6 +767,7 @@
             targetProgress = targetProgress === 0 ? 1 : 0;
         });
 
+        // Auto-play on load
         setTimeout(() => {
             mode = modes[Math.floor(Math.random() * modes.length)];
             targetProgress = 1;
