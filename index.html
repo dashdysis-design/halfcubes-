@@ -186,10 +186,11 @@
         }
 
         function drawCube(offsetX, offsetY, size) {
-            // Proper isometric projection: depth at ~0.866 ratio (sqrt(3)/2)
-            // and offset at 30-degree angle
-            const depthX = size * 0.5;  // horizontal depth
-            const depthY = size * 0.3;  // vertical depth (creates isometric angle)
+            // True isometric projection: 30° angle
+            // depthX = cos(30°) * size = 0.866 * size
+            // depthY = sin(30°) * size = 0.5 * size
+            const depthX = size * 0.866;  // horizontal depth (sqrt(3)/2)
+            const depthY = size * 0.5;    // vertical depth (1/2)
 
             // Define all points with proper isometric perspective
             const frontTL = [offsetX, offsetY];
@@ -209,8 +210,8 @@
 
         // Draw half cube with enhanced 3D
         function drawHalfCube(offsetX, offsetY, size, isLeft, rotation = 0) {
-            const depthX = size * 0.5;
-            const depthY = size * 0.3;
+            const depthX = size * 0.866;
+            const depthY = size * 0.5;
             const halfSize = size / 2;
 
             if (isLeft) {
@@ -259,8 +260,8 @@
 
         // Vertical split
         function drawVertical(centerX, centerY, size, splitAmount) {
-            const depthX = size * 0.5;
-            const depthY = size * 0.3;
+            const depthX = size * 0.866;
+            const depthY = size * 0.5;
             const halfSize = size / 2;
 
             // Top half
@@ -297,8 +298,8 @@
 
         // Diagonal split
         function drawDiagonal(centerX, centerY, size, splitAmount) {
-            const depthX = size * 0.5;
-            const depthY = size * 0.3;
+            const depthX = size * 0.866;
+            const depthY = size * 0.5;
             const offset = splitAmount * 0.8;
 
             // Left triangle piece
@@ -334,8 +335,8 @@
 
         // Book opening
         function drawBook(centerX, centerY, size, bookProgress) {
-            const depthX = size * 0.5;
-            const depthY = size * 0.3;
+            const depthX = size * 0.866;
+            const depthY = size * 0.5;
             const halfSize = size / 2;
             const angle = bookProgress * 50 * Math.PI / 180;
             const spread = bookProgress * 40;
@@ -391,8 +392,8 @@
 
         // Rotate (one half rotates around vertical axis)
         function drawRotate(centerX, centerY, size, rotateAmount) {
-            const depthX = size * 0.5;
-            const depthY = size * 0.3;
+            const depthX = size * 0.866;
+            const depthY = size * 0.5;
             const halfSize = size / 2;
             const angle = rotateAmount * 60 * Math.PI / 180;
             const squeeze = Math.cos(angle);
@@ -423,8 +424,8 @@
 
         // Flip (one half flips up)
         function drawFlip(centerX, centerY, size, flipAmount) {
-            const depthX = size * 0.5;
-            const depthY = size * 0.3;
+            const depthX = size * 0.866;
+            const depthY = size * 0.5;
             const halfSize = size / 2;
             const angle = flipAmount * 90 * Math.PI / 180;
 
@@ -464,8 +465,8 @@
 
         // Twist (halves twist opposite directions)
         function drawTwist(centerX, centerY, size, twistAmount) {
-            const depthX = size * 0.5;
-            const depthY = size * 0.3;
+            const depthX = size * 0.866;
+            const depthY = size * 0.5;
             const halfSize = size / 2;
             const twist = twistAmount * 30;
 
@@ -498,8 +499,8 @@
 
         // Unfold (like opening a box)
         function drawUnfold(centerX, centerY, size, unfoldAmount) {
-            const depthX = size * 0.5;
-            const depthY = size * 0.3;
+            const depthX = size * 0.866;
+            const depthY = size * 0.5;
             const halfSize = size / 2;
             const angle = unfoldAmount * 70 * Math.PI / 180;
             const spread = unfoldAmount * 35;
@@ -545,8 +546,8 @@
 
         // Pivot (one half pivots on bottom edge)
         function drawPivot(centerX, centerY, size, pivotAmount) {
-            const depthX = size * 0.5;
-            const depthY = size * 0.3;
+            const depthX = size * 0.866;
+            const depthY = size * 0.5;
             const halfSize = size / 2;
             const angle = pivotAmount * 45 * Math.PI / 180;
 
