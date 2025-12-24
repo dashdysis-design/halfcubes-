@@ -186,16 +186,20 @@
         }
 
         function drawCube(offsetX, offsetY, size) {
-            const depth = size * 0.65;
+            // Proper isometric projection: depth at ~0.866 ratio (sqrt(3)/2)
+            // and offset at 30-degree angle
+            const depthX = size * 0.5;  // horizontal depth
+            const depthY = size * 0.3;  // vertical depth (creates isometric angle)
 
-            // Define all points
+            // Define all points with proper isometric perspective
             const frontTL = [offsetX, offsetY];
             const frontTR = [offsetX + size, offsetY];
             const frontBR = [offsetX + size, offsetY + size];
             const frontBL = [offsetX, offsetY + size];
-            const backTL = [offsetX + depth, offsetY - depth];
-            const backTR = [offsetX + size + depth, offsetY - depth];
-            const backBR = [offsetX + size + depth, offsetY + size - depth];
+            const backTL = [offsetX + depthX, offsetY - depthY];
+            const backTR = [offsetX + size + depthX, offsetY - depthY];
+            const backBR = [offsetX + size + depthX, offsetY + size - depthY];
+            const backBL = [offsetX + depthX, offsetY + size - depthY];
 
             // Draw faces with subtle shading (back to front)
             drawFace([backTL, backTR, frontTR, frontTL], 1); // Top face
@@ -205,7 +209,8 @@
 
         // Draw half cube with enhanced 3D
         function drawHalfCube(offsetX, offsetY, size, isLeft, rotation = 0) {
-            const depth = size * 0.65;
+            const depthX = size * 0.5;
+            const depthY = size * 0.3;
             const halfSize = size / 2;
 
             if (isLeft) {
@@ -213,9 +218,10 @@
                 const frontTR = [offsetX + halfSize, offsetY];
                 const frontBR = [offsetX + halfSize, offsetY + size];
                 const frontBL = [offsetX, offsetY + size];
-                const backTL = [offsetX + depth, offsetY - depth];
-                const backTR = [offsetX + halfSize + depth, offsetY - depth];
-                const backBR = [offsetX + halfSize + depth, offsetY + size - depth];
+                const backTL = [offsetX + depthX, offsetY - depthY];
+                const backTR = [offsetX + halfSize + depthX, offsetY - depthY];
+                const backBR = [offsetX + halfSize + depthX, offsetY + size - depthY];
+                const backBL = [offsetX + depthX, offsetY + size - depthY];
 
                 // Draw the split face (newly exposed interior)
                 drawFace([frontTR, backTR, backBR, frontBR], 1);
@@ -228,12 +234,13 @@
                 const frontTR = [offsetX + halfSize, offsetY];
                 const frontBR = [offsetX + halfSize, offsetY + size];
                 const frontBL = [offsetX, offsetY + size];
-                const backTL = [offsetX + depth, offsetY - depth];
-                const backTR = [offsetX + halfSize + depth, offsetY - depth];
-                const backBR = [offsetX + halfSize + depth, offsetY + size - depth];
+                const backTL = [offsetX + depthX, offsetY - depthY];
+                const backTR = [offsetX + halfSize + depthX, offsetY - depthY];
+                const backBR = [offsetX + halfSize + depthX, offsetY + size - depthY];
+                const backBL = [offsetX + depthX, offsetY + size - depthY];
 
                 // Draw the split face
-                drawFace([frontTL, backTL, backBR, frontBL], 1);
+                drawFace([frontTL, backTL, backBL, frontBL], 1);
                 // Top face
                 drawFace([backTL, backTR, frontTR, frontTL], 1);
                 // Right face
@@ -252,7 +259,8 @@
 
         // Vertical split
         function drawVertical(centerX, centerY, size, splitAmount) {
-            const depth = size * 0.65;
+            const depthX = size * 0.5;
+            const depthY = size * 0.3;
             const halfSize = size / 2;
 
             // Top half
@@ -261,13 +269,14 @@
             const frontTR = [centerX + size, topY];
             const frontBR = [centerX + size, topY + halfSize];
             const frontBL = [centerX, topY + halfSize];
-            const backTL = [centerX + depth, topY - depth];
-            const backTR = [centerX + size + depth, topY - depth];
-            const backBR = [centerX + size + depth, topY + halfSize - depth];
+            const backTL = [centerX + depthX, topY - depthY];
+            const backTR = [centerX + size + depthX, topY - depthY];
+            const backBR = [centerX + size + depthX, topY + halfSize - depthY];
+            const backBL = [centerX + depthX, topY + halfSize - depthY];
 
             drawFace([backTL, backTR, frontTR, frontTL], 1);
             drawFace([frontTR, backTR, backBR, frontBR], 2);
-            drawFace([frontBL, backBR, backTL, frontTL], 1); // Bottom of top half (newly exposed)
+            drawFace([frontBL, frontBR, backBR, backBL], 1); // Bottom of top half (newly exposed)
             drawFace([frontTL, frontTR, frontBR, frontBL], 0);
 
             // Bottom half
@@ -276,9 +285,10 @@
             const bFrontTR = [centerX + size, botY];
             const bFrontBR = [centerX + size, botY + halfSize];
             const bFrontBL = [centerX, botY + halfSize];
-            const bBackTL = [centerX + depth, botY - depth];
-            const bBackTR = [centerX + size + depth, botY - depth];
-            const bBackBR = [centerX + size + depth, botY + halfSize - depth];
+            const bBackTL = [centerX + depthX, botY - depthY];
+            const bBackTR = [centerX + size + depthX, botY - depthY];
+            const bBackBR = [centerX + size + depthX, botY + halfSize - depthY];
+            const bBackBL = [centerX + depthX, botY + halfSize - depthY];
 
             drawFace([bFrontTL, bFrontTR, bBackTR, bBackTL], 1); // Top of bottom half (newly exposed)
             drawFace([bFrontTR, bBackTR, bBackBR, bFrontBR], 2);
@@ -287,7 +297,8 @@
 
         // Diagonal split
         function drawDiagonal(centerX, centerY, size, splitAmount) {
-            const depth = size * 0.65;
+            const depthX = size * 0.5;
+            const depthY = size * 0.3;
             const offset = splitAmount * 0.8;
 
             // Left triangle piece
@@ -296,9 +307,9 @@
             const l1 = [leftX, leftY];
             const l2 = [leftX + size/2, leftY];
             const l3 = [leftX, leftY + size];
-            const l4 = [leftX + depth, leftY - depth];
-            const l5 = [leftX + size/2 + depth, leftY - depth];
-            const l6 = [leftX + depth, leftY + size - depth];
+            const l4 = [leftX + depthX, leftY - depthY];
+            const l5 = [leftX + size/2 + depthX, leftY - depthY];
+            const l6 = [leftX + depthX, leftY + size - depthY];
 
             drawFace([l4, l5, l2, l1], 1);
             drawFace([l2, l5, l6, l3], 1);
@@ -311,9 +322,9 @@
             const r2 = [rightX + size, rightY];
             const r3 = [rightX + size, rightY + size];
             const r4 = [rightX, rightY + size];
-            const r5 = [rightX + size/2 + depth, rightY - depth];
-            const r6 = [rightX + size + depth, rightY - depth];
-            const r7 = [rightX + size + depth, rightY + size - depth];
+            const r5 = [rightX + size/2 + depthX, rightY - depthY];
+            const r6 = [rightX + size + depthX, rightY - depthY];
+            const r7 = [rightX + size + depthX, rightY + size - depthY];
 
             drawFace([r5, r6, r2, r1], 1);
             drawFace([r2, r6, r7, r3], 2);
@@ -323,14 +334,15 @@
 
         // Book opening
         function drawBook(centerX, centerY, size, bookProgress) {
-            const depth = size * 0.65;
+            const depthX = size * 0.5;
+            const depthY = size * 0.3;
             const halfSize = size / 2;
             const angle = bookProgress * 50 * Math.PI / 180;
             const spread = bookProgress * 40;
 
             // Calculate rotation effect
             const leftRotate = Math.sin(angle) * halfSize;
-            const depthShift = (1 - Math.cos(angle)) * halfSize;
+            const depthShift = (1 - Math.cos(angle)) * halfSize * 0.5;
 
             // Left page
             const lx = centerX - halfSize - spread;
@@ -338,8 +350,8 @@
             const l2 = [lx + halfSize, centerY];
             const l3 = [lx + halfSize - leftRotate, centerY + size];
             const l4 = [lx, centerY + size];
-            const l5 = [lx + depth - depthShift, centerY - depth];
-            const l6 = [lx + halfSize + depth - depthShift, centerY - depth];
+            const l5 = [lx + depthX - depthShift, centerY - depthY];
+            const l6 = [lx + halfSize + depthX - depthShift, centerY - depthY];
 
             drawFace([l5, l6, l2, l1], 1);
             drawFace([l2, l6, l6, l3], 1);
@@ -351,8 +363,8 @@
             const r2 = [rx + halfSize, centerY];
             const r3 = [rx + halfSize, centerY + size];
             const r4 = [rx + leftRotate, centerY + size];
-            const r5 = [rx + depth - depthShift, centerY - depth];
-            const r6 = [rx + halfSize + depth, centerY - depth];
+            const r5 = [rx + depthX - depthShift, centerY - depthY];
+            const r6 = [rx + halfSize + depthX, centerY - depthY];
 
             drawFace([r5, r6, r2, r1], 1);
             drawFace([r2, r6, r6, r3], 2);
@@ -379,7 +391,8 @@
 
         // Rotate (one half rotates around vertical axis)
         function drawRotate(centerX, centerY, size, rotateAmount) {
-            const depth = size * 0.65;
+            const depthX = size * 0.5;
+            const depthY = size * 0.3;
             const halfSize = size / 2;
             const angle = rotateAmount * 60 * Math.PI / 180;
             const squeeze = Math.cos(angle);
@@ -399,8 +412,8 @@
                 const r2 = [rx + squeezeSize, ry];
                 const r3 = [rx + squeezeSize, ry + size];
                 const r4 = [rx, ry + size];
-                const r5 = [rx + depth, ry - depth];
-                const r6 = [rx + squeezeSize + depth, ry - depth];
+                const r5 = [rx + depthX * squeeze, ry - depthY];
+                const r6 = [rx + squeezeSize + depthX * squeeze, ry - depthY];
 
                 drawFace([r5, r6, r2, r1], 1);
                 drawFace([r2, r6, r6, r3], 2);
@@ -410,7 +423,8 @@
 
         // Flip (one half flips up)
         function drawFlip(centerX, centerY, size, flipAmount) {
-            const depth = size * 0.65;
+            const depthX = size * 0.5;
+            const depthY = size * 0.3;
             const halfSize = size / 2;
             const angle = flipAmount * 90 * Math.PI / 180;
 
@@ -420,11 +434,12 @@
             const b2 = [centerX + size, by];
             const b3 = [centerX + size, by + halfSize];
             const b4 = [centerX, by + halfSize];
-            const b5 = [centerX + depth, by - depth];
-            const b6 = [centerX + size + depth, by - depth];
+            const b5 = [centerX + depthX, by - depthY];
+            const b6 = [centerX + size + depthX, by - depthY];
+            const b7 = [centerX + size + depthX, by + halfSize - depthY];
 
             drawFace([b1, b2, b6, b5], 1);
-            drawFace([b2, b6, b6, b3], 2);
+            drawFace([b2, b6, b7, b3], 2);
             drawFace([b1, b2, b3, b4], 0);
 
             // Top half (flipping)
@@ -436,8 +451,8 @@
             const t2 = [centerX + size, ty + halfSize];
             const t3 = [centerX + size, ty + halfSize - flipHeight];
             const t4 = [centerX, ty + halfSize - flipHeight];
-            const t5 = [centerX + depth, ty + halfSize - depth];
-            const t6 = [centerX + size + depth, ty + halfSize - depth];
+            const t5 = [centerX + depthX, ty + halfSize - depthY];
+            const t6 = [centerX + size + depthX, ty + halfSize - depthY];
 
             if (flipHeight > 2) {
                 drawFace([t5, t6, t2, t1], 1);
@@ -449,7 +464,8 @@
 
         // Twist (halves twist opposite directions)
         function drawTwist(centerX, centerY, size, twistAmount) {
-            const depth = size * 0.65;
+            const depthX = size * 0.5;
+            const depthY = size * 0.3;
             const halfSize = size / 2;
             const twist = twistAmount * 30;
 
@@ -459,8 +475,8 @@
             const l2 = [lx + halfSize + twist * 0.2, centerY];
             const l3 = [lx + halfSize - twist * 0.2, centerY + size];
             const l4 = [lx + twist * 0.2, centerY + size];
-            const l5 = [lx + depth - twist * 0.2, centerY - depth];
-            const l6 = [lx + halfSize + depth + twist * 0.2, centerY - depth];
+            const l5 = [lx + depthX - twist * 0.2, centerY - depthY];
+            const l6 = [lx + halfSize + depthX + twist * 0.2, centerY - depthY];
 
             drawFace([l5, l6, l2, l1], 1);
             drawFace([l2, l6, l6, l3], 1);
@@ -472,8 +488,8 @@
             const r2 = [rx + halfSize - twist * 0.2, centerY];
             const r3 = [rx + halfSize + twist * 0.2, centerY + size];
             const r4 = [rx - twist * 0.2, centerY + size];
-            const r5 = [rx + depth + twist * 0.2, centerY - depth];
-            const r6 = [rx + halfSize + depth - twist * 0.2, centerY - depth];
+            const r5 = [rx + depthX + twist * 0.2, centerY - depthY];
+            const r6 = [rx + halfSize + depthX - twist * 0.2, centerY - depthY];
 
             drawFace([r5, r6, r2, r1], 1);
             drawFace([r2, r6, r6, r3], 2);
@@ -482,7 +498,8 @@
 
         // Unfold (like opening a box)
         function drawUnfold(centerX, centerY, size, unfoldAmount) {
-            const depth = size * 0.65;
+            const depthX = size * 0.5;
+            const depthY = size * 0.3;
             const halfSize = size / 2;
             const angle = unfoldAmount * 70 * Math.PI / 180;
             const spread = unfoldAmount * 35;
@@ -496,8 +513,8 @@
             const l2 = [lx + halfSize, ly];
             const l3 = [lx + halfSize, ly + size - leftLift];
             const l4 = [lx, ly + size];
-            const l5 = [lx + depth, ly - depth];
-            const l6 = [lx + halfSize + depth, ly - depth];
+            const l5 = [lx + depthX, ly - depthY];
+            const l6 = [lx + halfSize + depthX, ly - depthY];
 
             drawFace([l5, l6, l2, l1], 1);
             drawFace([l2, l6, l6, l3], 1);
@@ -511,8 +528,8 @@
             const r2 = [rx + halfSize, ry];
             const r3 = [rx + halfSize, ry + size];
             const r4 = [rx, ry + size - leftLift];
-            const r5 = [rx + depth, ry - depth];
-            const r6 = [rx + halfSize + depth, ry - depth];
+            const r5 = [rx + depthX, ry - depthY];
+            const r6 = [rx + halfSize + depthX, ry - depthY];
 
             drawFace([r5, r6, r2, r1], 1);
             drawFace([r2, r6, r6, r3], 2);
@@ -528,7 +545,8 @@
 
         // Pivot (one half pivots on bottom edge)
         function drawPivot(centerX, centerY, size, pivotAmount) {
-            const depth = size * 0.65;
+            const depthX = size * 0.5;
+            const depthY = size * 0.3;
             const halfSize = size / 2;
             const angle = pivotAmount * 45 * Math.PI / 180;
 
@@ -545,8 +563,8 @@
             const l2 = [pivotX + halfSize, pivotY - raise];
             const l3 = [pivotX + halfSize, pivotY + size];
             const l4 = [pivotX, pivotY + size];
-            const l5 = [pivotX + depth - tilt, pivotY - depth - raise];
-            const l6 = [pivotX + halfSize + depth, pivotY - depth - raise];
+            const l5 = [pivotX + depthX - tilt, pivotY - depthY - raise];
+            const l6 = [pivotX + halfSize + depthX, pivotY - depthY - raise];
 
             drawFace([l5, l6, l2, l1], 1);
             drawFace([l2, l6, l6, l3], 1);

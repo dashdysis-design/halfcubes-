@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hand-drawn Cube Split Variations</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #fafaf8;
+            font-family: 'Courier New', monospace;
+        }
+
+        canvas {
+            border: 1px solid #eee;
+            cursor: pointer;
+        }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: white;
+            border: 2px solid #2a2a2a;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        button:hover {
+            background: #f0f0f0;
+        }
+
+        button.active {
+            background: #2a2a2a;
+            color: white;
+        }
+
+        .instruction {
+            margin-top: 15px;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="800" height="400"></canvas>
+    
+    <div class="controls">
+        <button onclick="testAnimation('horizontal')">Horizontal</button>
+        <button onclick="testAnimation('vertical')">Vertical</button>
+        <button onclick="testAnimation('diagonal')">Diagonal</button>
+        <button onclick="testAnimation('explode')">Explode</button>
+        <button onclick="testAnimation('book')">Book</button>
+        <button onclick="testAnimation('random')">Random</button>
+    </div>
+    
+    <div class="instruction">Click canvas or buttons to test animations</div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        let progress = 0;
+        let targetProgress = 0;
+        let mode = 'horizontal';
+        const modes = ['horizontal', 'vertical', 'diagonal', 'explode', 'book'];
+
+        function testAnimation(animMode) {
+            if (animMode === 'random') {
+                mode = modes[Math.floor(Math.random() * modes.length)];
+            } else {
+                mode = animMode;
+            }
+            targetProgress = targetProgress === 0 ? 1 : 0;
+            
+            // Update button states
+            document.querySelectorAll('button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        // Hand-drawn line function with slight wobble
+        function drawWobblyLine(x1, y1, x2, y2) {
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            
+            const steps = 20;
+            for (let i = 1; i <= steps; i++) {
+                const t = i / steps;
+                const x = x1 + (x2 - x1) * t;
+                const y = y1 + (y2 - y1) * t;
+                const wobble = Math.sin(t * Math.PI * 4) * 0.5;
+                ctx.lineTo(x + wobble, y + wobble);
+            }
+            
+            ctx.strokeStyle = '#2a2a2a';
+            ctx.lineWidth = 2.5;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.stroke();
+        }
+
+        function drawCube(offsetX, offsetY, size) {
+            const depth = size * 0.6;
+            
+            // Front face
+            drawWobblyLine(offsetX, offsetY, offsetX + size, offsetY);
+            drawWobblyLine(offsetX + size, offsetY, offsetX + size, offsetY + size);
+            drawWobblyLine(offsetX + size, offsetY + size, offsetX, offsetY + size);
+            drawWobblyLine(offsetX, offsetY + size, offsetX, offsetY);
+            
+            // Back face (top edges)
+            drawWobblyLine(offsetX, offsetY, offsetX + depth, offsetY - depth);
+            drawWobblyLine(offsetX + size, offsetY, offsetX + size + depth, offsetY - depth);
+            
+            // Side face
+            drawWobblyLine(offsetX + size, offsetY, offsetX + size + depth, offsetY - depth);
+            drawWobblyLine(offsetX + size + depth, offsetY - depth, offsetX + size + depth, offsetY + size - depth);
+            drawWobblyLine(offsetX + size + depth, offsetY + size - depth, offsetX + size, offsetY + size);
+            
+            // Top face
+            drawWobblyLine(offsetX + depth, offsetY - depth, offsetX + size + depth, offsetY - depth);
+        }
+
+        function drawHalfCubeHorizontal(offsetX, offsetY, size, isLeft) {
+            const depth = size * 0.6;
+            const halfSize = size / 2;
+            
+            if (isLeft) {
+                drawWobblyLine(offsetX, offsetY, offsetX + halfSize, offsetY);
+                drawWobblyLine(offsetX + halfSize, offsetY, offsetX + halfSize, offsetY + size);
+                drawWobblyLine(offsetX + halfSize, offsetY + size, offsetX, offsetY + size);
+                drawWobblyLine(offsetX, offsetY + size, offsetX, offsetY);
+                
+                drawWobblyLine(offsetX, offsetY, offsetX + depth, offsetY - depth);
+                drawWobblyLine(offsetX + depth, offsetY - depth, offsetX + halfSize + depth, offsetY - depth);
+                drawWobblyLine(offsetX + halfSize + depth, offsetY - depth, offsetX + halfSize, offsetY);
+                
+                drawWobblyLine(offsetX + halfSize, offsetY, offsetX + halfSize + depth, offsetY - depth);
+                drawWobblyLine(offsetX + halfSize + depth, offsetY - depth, offsetX + halfSize + depth, offsetY + size - depth);
+                drawWobblyLine(offsetX + halfSize + depth, offsetY + size - depth, offsetX + halfSize, offsetY + size);
+            } else {
+                drawWobblyLine(offsetX, offsetY, offsetX + halfSize, offsetY);
+                drawWobblyLine(offsetX + halfSize, offsetY, offsetX + halfSize, offsetY + size);
+                drawWobblyLine(offsetX + halfSize, offsetY + size, offsetX, offsetY + size);
+                drawWobblyLine(offsetX, offsetY + size, offsetX, offsetY);
+                
+                drawWobblyLine(offsetX, offsetY, offsetX + depth, offsetY - depth);
+                drawWobblyLine(offsetX + depth, offsetY - depth, offsetX + halfSize + depth, offsetY - depth);
+                drawWobblyLine(offsetX + halfSize + depth, offsetY - depth, offsetX + halfSize, offsetY);
+                
+                drawWobblyLine(offsetX + halfSize, offsetY, offsetX + halfSize + depth, offsetY - depth);
+                drawWobblyLine(offsetX + halfSize + depth, offsetY - depth, offsetX + halfSize + depth, offsetY + size - depth);
+                drawWobblyLine(offsetX + halfSize + depth, offsetY + size - depth, offsetX + halfSize, offsetY + size);
+            }
+        }
+
+        function drawHalfCubeVertical(offsetX, offsetY, size, isTop) {
+            const depth = size * 0.6;
+            const halfSize = size / 2;
+            
+            if (isTop) {
+                drawWobblyLine(offsetX, offsetY, offsetX + size, offsetY);
+                drawWobblyLine(offsetX + size, offsetY, offsetX + size, offsetY + halfSize);
+                drawWobblyLine(offsetX + size, offsetY + halfSize, offsetX, offsetY + halfSize);
+                drawWobblyLine(offsetX, offsetY + halfSize, offsetX, offsetY);
+                
+                drawWobblyLine(offsetX, offsetY, offsetX + depth, offsetY - depth);
+                drawWobblyLine(offsetX + size, offsetY, offsetX + size + depth, offsetY - depth);
+                
+                drawWobblyLine(offsetX + size, offsetY, offsetX + size + depth, offsetY - depth);
+                drawWobblyLine(offsetX + size + depth, offsetY - depth, offsetX + size + depth, offsetY + halfSize - depth);
+                drawWobblyLine(offsetX + size + depth, offsetY + halfSize - depth, offsetX + size, offsetY + halfSize);
+                
+                drawWobblyLine(offsetX + depth, offsetY - depth, offsetX + size + depth, offsetY - depth);
+                
+                // Add the diagonal line on top surface connecting the split
+                drawWobblyLine(offsetX, offsetY + halfSize, offsetX + depth, offsetY + halfSize - depth);
+            } else {
+                drawWobblyLine(offsetX, offsetY, offsetX + size, offsetY);
+                drawWobblyLine(offsetX + size, offsetY, offsetX + size, offsetY + halfSize);
+                drawWobblyLine(offsetX + size, offsetY + halfSize, offsetX, offsetY + halfSize);
+                drawWobblyLine(offsetX, offsetY + halfSize, offsetX, offsetY);
+                
+                drawWobblyLine(offsetX + size, offsetY, offsetX + size + depth, offsetY - depth);
+                drawWobblyLine(offsetX + size + depth, offsetY - depth, offsetX + size + depth, offsetY + halfSize - depth);
+                drawWobblyLine(offsetX + size + depth, offsetY + halfSize - depth, offsetX + size, offsetY + halfSize);
+                
+                // Add the diagonal line on top surface connecting the split
+                drawWobblyLine(offsetX, offsetY, offsetX + depth, offsetY - depth);
+            }
+        }
+
+        function drawDiagonalHalf(offsetX, offsetY, size, isLeft) {
+            const depth = size * 0.6;
+            
+            if (isLeft) {
+                drawWobblyLine(offsetX, offsetY, offsetX + size/2, offsetY);
+                drawWobblyLine(offsetX + size/2, offsetY, offsetX, offsetY + size);
+                drawWobblyLine(offsetX, offsetY + size, offsetX, offsetY);
+                
+                drawWobblyLine(offsetX, offsetY, offsetX + depth, offsetY - depth);
+                drawWobblyLine(offsetX + depth, offsetY - depth, offsetX + size/2 + depth, offsetY - depth);
+                drawWobblyLine(offsetX + size/2 + depth, offsetY - depth, offsetX + size/2, offsetY);
+                
+                drawWobblyLine(offsetX + size/2, offsetY, offsetX + size/2 + depth, offsetY - depth);
+                drawWobblyLine(offsetX + size/2 + depth, offsetY - depth, offsetX + depth, offsetY + size - depth);
+                drawWobblyLine(offsetX + depth, offsetY + size - depth, offsetX, offsetY + size);
+            } else {
+                drawWobblyLine(offsetX + size/2, offsetY, offsetX + size, offsetY);
+                drawWobblyLine(offsetX + size, offsetY, offsetX + size, offsetY + size);
+                drawWobblyLine(offsetX + size, offsetY + size, offsetX, offsetY + size);
+                drawWobblyLine(offsetX, offsetY + size, offsetX + size/2, offsetY);
+                
+                drawWobblyLine(offsetX + size/2, offsetY, offsetX + size/2 + depth, offsetY - depth);
+                drawWobblyLine(offsetX + size/2 + depth, offsetY - depth, offsetX + size + depth, offsetY - depth);
+                drawWobblyLine(offsetX + size + depth, offsetY - depth, offsetX + size, offsetY);
+                
+                drawWobblyLine(offsetX + size, offsetY, offsetX + size + depth, offsetY - depth);
+                drawWobblyLine(offsetX + size + depth, offsetY - depth, offsetX + size + depth, offsetY + size - depth);
+                drawWobblyLine(offsetX + size + depth, offsetY + size - depth, offsetX + size, offsetY + size);
+            }
+        }
+
+        function drawBookHalf(offsetX, offsetY, size, isLeft, openAmount) {
+            const depth = size * 0.6;
+            const halfSize = size / 2;
+            
+            // Calculate the opening - halves rotate around the top center edge
+            const angle = openAmount * 45 * Math.PI / 180; // Up to 45 degrees
+            
+            if (isLeft) {
+                // Left half rotates counter-clockwise
+                const bottomShift = halfSize * Math.sin(angle);
+                const depthShift = halfSize * (1 - Math.cos(angle));
+                
+                // Front face
+                drawWobblyLine(offsetX, offsetY, offsetX + halfSize, offsetY);
+                drawWobblyLine(offsetX + halfSize, offsetY, offsetX + halfSize - bottomShift, offsetY + size);
+                drawWobblyLine(offsetX + halfSize - bottomShift, offsetY + size, offsetX, offsetY + size);
+                drawWobblyLine(offsetX, offsetY + size, offsetX, offsetY);
+                
+                // Top face (shared hinge edge)
+                drawWobblyLine(offsetX, offsetY, offsetX + depth - depthShift, offsetY - depth);
+                drawWobblyLine(offsetX + depth - depthShift, offsetY - depth, offsetX + halfSize + depth - depthShift, offsetY - depth);
+                drawWobblyLine(offsetX + halfSize + depth - depthShift, offsetY - depth, offsetX + halfSize, offsetY);
+                
+                // Side face
+                drawWobblyLine(offsetX + halfSize, offsetY, offsetX + halfSize + depth - depthShift, offsetY - depth);
+                drawWobblyLine(offsetX + halfSize + depth - depthShift, offsetY - depth, offsetX + halfSize + depth - depthShift - bottomShift, offsetY + size - depth);
+                drawWobblyLine(offsetX + halfSize + depth - depthShift - bottomShift, offsetY + size - depth, offsetX + halfSize - bottomShift, offsetY + size);
+            } else {
+                // Right half rotates clockwise
+                const bottomShift = halfSize * Math.sin(angle);
+                const depthShift = halfSize * (1 - Math.cos(angle));
+                
+                // Front face
+                drawWobblyLine(offsetX, offsetY, offsetX + halfSize, offsetY);
+                drawWobblyLine(offsetX + halfSize, offsetY, offsetX + halfSize, offsetY + size);
+                drawWobblyLine(offsetX + halfSize, offsetY + size, offsetX + bottomShift, offsetY + size);
+                drawWobblyLine(offsetX + bottomShift, offsetY + size, offsetX, offsetY);
+                
+                // Top face
+                drawWobblyLine(offsetX, offsetY, offsetX + depth - depthShift, offsetY - depth);
+                drawWobblyLine(offsetX + depth - depthShift, offsetY - depth, offsetX + halfSize + depth, offsetY - depth);
+                drawWobblyLine(offsetX + halfSize + depth, offsetY - depth, offsetX + halfSize, offsetY);
+                
+                // Side face
+                drawWobblyLine(offsetX + halfSize, offsetY, offsetX + halfSize + depth, offsetY - depth);
+                drawWobblyLine(offsetX + halfSize + depth, offsetY - depth, offsetX + halfSize + depth, offsetY + size - depth);
+                drawWobblyLine(offsetX + halfSize + depth, offsetY + size - depth, offsetX + halfSize, offsetY + size);
+            }
+        }
+
+        function animate() {
+            progress += (targetProgress - progress) * 0.08;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const size = 140;
+            const maxSplit = 80;
+            const splitAmount = progress * maxSplit;
+            
+            if (progress < 0.1) {
+                drawCube(centerX - size / 2, centerY - size / 2 + 40, size);
+            } else {
+                switch(mode) {
+                    case 'horizontal':
+                        drawHalfCubeHorizontal(centerX - size / 2 - splitAmount, centerY - size / 2 + 40, size, true);
+                        drawHalfCubeHorizontal(centerX + splitAmount, centerY - size / 2 + 40, size, false);
+                        break;
+                    
+                    case 'vertical':
+                        drawHalfCubeVertical(centerX - size / 2, centerY - size / 2 + 40 - splitAmount, size, true);
+                        drawHalfCubeVertical(centerX - size / 2, centerY - size / 2 + 40 + size/2 + splitAmount, size, false);
+                        break;
+                    
+                    case 'diagonal':
+                        drawDiagonalHalf(centerX - size / 2 - splitAmount * 0.7, centerY - size / 2 + 40 - splitAmount * 0.3, size, true);
+                        drawDiagonalHalf(centerX - size / 2 + splitAmount * 0.7, centerY - size / 2 + 40 + splitAmount * 0.3, size, false);
+                        break;
+                    
+                    case 'explode':
+                        const explode = progress * 60;
+                        drawHalfCubeHorizontal(centerX - size / 2 - explode, centerY - size / 2 + 40 - explode * 0.5, size, true);
+                        drawHalfCubeHorizontal(centerX + explode, centerY - size / 2 + 40 + explode * 0.5, size, false);
+                        break;
+                    
+                    case 'book':
+                        // Book opening - halves stay connected at top
+                        const bookSplit = splitAmount * 0.4;
+                        const depth = size * 0.6;
+                        const angle = progress * 45 * Math.PI / 180;
+                        const depthShift = (size / 2) * (1 - Math.cos(angle));
+                        
+                        drawBookHalf(centerX - size / 2 - bookSplit, centerY - size / 2 + 40, size, true, progress);
+                        drawBookHalf(centerX - size / 2 + size / 2 + bookSplit, centerY - size / 2 + 40, size, false, progress);
+                        
+                        // Draw the connecting hinge line at the top
+                        const hingeY = centerY - size / 2 + 40;
+                        const hingeDepthY = hingeY - depth;
+                        const leftHingeX = centerX - bookSplit;
+                        const rightHingeX = centerX + bookSplit;
+                        
+                        // Connecting line on top surface
+                        drawWobblyLine(
+                            leftHingeX + depth - depthShift, 
+                            hingeDepthY, 
+                            rightHingeX + depth - depthShift, 
+                            hingeDepthY
+                        );
+                        break;
+                }
+            }
+            
+            requestAnimationFrame(animate);
+        }
+
+        canvas.addEventListener('click', () => {
+            mode = modes[Math.floor(Math.random() * modes.length)];
+            targetProgress = targetProgress === 0 ? 1 : 0;
+        });
+
+        setTimeout(() => { 
+            mode = modes[Math.floor(Math.random() * modes.length)];
+            targetProgress = 1; 
+        }, 500);
+
+        animate();
+    </script>
+</body>
+</html>
