@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Halfcubes - Cube Split Animations</title>
+    <title>Halfcubes</title>
     <style>
         * {
             margin: 0;
@@ -38,55 +38,11 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
-        .controls {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 10px;
-            width: 100%;
-            max-width: 800px;
-        }
-
-        button {
-            padding: 12px 16px;
-            background: white;
-            border: 2px solid #2a2a2a;
-            border-radius: 6px;
-            cursor: pointer;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            font-weight: bold;
-            transition: all 0.2s ease;
-        }
-
-        button:hover {
-            background: #f0f0f0;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        button.active {
-            background: #2a2a2a;
-            color: white;
-        }
-
-        .instruction {
-            color: #666;
-            font-size: 14px;
-            text-align: center;
-        }
 
         @media (max-width: 600px) {
             canvas {
                 width: 100%;
                 height: auto;
-            }
-
-            .controls {
-                grid-template-columns: repeat(2, 1fr);
             }
         }
     </style>
@@ -94,24 +50,6 @@
 <body>
     <div class="container">
         <canvas id="canvas" width="800" height="500"></canvas>
-
-        <div class="controls">
-            <button onclick="playAnimation('horizontal')">Horizontal</button>
-            <button onclick="playAnimation('vertical')">Vertical</button>
-            <button onclick="playAnimation('diagonal')">Diagonal</button>
-            <button onclick="playAnimation('book')">Book</button>
-            <button onclick="playAnimation('slide')">Slide</button>
-            <button onclick="playAnimation('rotate')">Rotate</button>
-            <button onclick="playAnimation('flip')">Flip</button>
-            <button onclick="playAnimation('twist')">Twist</button>
-            <button onclick="playAnimation('unfold')">Unfold</button>
-            <button onclick="playAnimation('separate')">Separate</button>
-            <button onclick="playAnimation('pivot')">Pivot</button>
-            <button onclick="playAnimation('crumble')">Crumble</button>
-            <button onclick="playAnimation('random')" style="grid-column: 1 / -1; background: #2a2a2a; color: white;">Random</button>
-        </div>
-
-        <div class="instruction">Click any button to see the animation • Click canvas to toggle</div>
     </div>
 
     <script>
@@ -120,24 +58,6 @@
 
         let progress = 0;
         let targetProgress = 0;
-        let mode = 'horizontal';
-        const modes = ['horizontal', 'vertical', 'diagonal', 'book', 'slide',
-                       'rotate', 'flip', 'twist', 'unfold', 'separate', 'pivot', 'crumble'];
-
-        function playAnimation(animMode) {
-            if (animMode === 'random') {
-                mode = modes[Math.floor(Math.random() * modes.length)];
-            } else {
-                mode = animMode;
-            }
-            targetProgress = targetProgress === 0 ? 1 : 0;
-
-            // Update button states
-            document.querySelectorAll('button').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-        }
 
         // Enhanced hand-drawn line with more wobble variation
         function drawWobblyLine(x1, y1, x2, y2, intensity = 1) {
@@ -258,354 +178,6 @@
             drawHalfCube(centerX + splitAmount, centerY, size, false);
         }
 
-        // Vertical split
-        function drawVertical(centerX, centerY, size, splitAmount) {
-            const depthX = size * 0.866;
-            const depthY = size * 0.5;
-            const halfSize = size / 2;
-
-            // Top half
-            const topY = centerY - splitAmount;
-            const frontTL = [centerX, topY];
-            const frontTR = [centerX + size, topY];
-            const frontBR = [centerX + size, topY + halfSize];
-            const frontBL = [centerX, topY + halfSize];
-            const backTL = [centerX + depthX, topY - depthY];
-            const backTR = [centerX + size + depthX, topY - depthY];
-            const backBR = [centerX + size + depthX, topY + halfSize - depthY];
-            const backBL = [centerX + depthX, topY + halfSize - depthY];
-
-            drawFace([backTL, backTR, frontTR, frontTL], 1);
-            drawFace([frontTR, backTR, backBR, frontBR], 2);
-            drawFace([frontBL, frontBR, backBR, backBL], 1); // Bottom of top half (newly exposed)
-            drawFace([frontTL, frontTR, frontBR, frontBL], 0);
-
-            // Bottom half
-            const botY = centerY + halfSize + splitAmount;
-            const bFrontTL = [centerX, botY];
-            const bFrontTR = [centerX + size, botY];
-            const bFrontBR = [centerX + size, botY + halfSize];
-            const bFrontBL = [centerX, botY + halfSize];
-            const bBackTL = [centerX + depthX, botY - depthY];
-            const bBackTR = [centerX + size + depthX, botY - depthY];
-            const bBackBR = [centerX + size + depthX, botY + halfSize - depthY];
-            const bBackBL = [centerX + depthX, botY + halfSize - depthY];
-
-            drawFace([bFrontTL, bFrontTR, bBackTR, bBackTL], 1); // Top of bottom half (newly exposed)
-            drawFace([bFrontTR, bBackTR, bBackBR, bFrontBR], 2);
-            drawFace([bFrontTL, bFrontTR, bFrontBR, bFrontBL], 0);
-        }
-
-        // Diagonal split
-        function drawDiagonal(centerX, centerY, size, splitAmount) {
-            const depthX = size * 0.866;
-            const depthY = size * 0.5;
-            const offset = splitAmount * 0.8;
-
-            // Left triangle piece
-            const leftX = centerX - offset;
-            const leftY = centerY - offset * 0.4;
-            const l1 = [leftX, leftY];
-            const l2 = [leftX + size/2, leftY];
-            const l3 = [leftX, leftY + size];
-            const l4 = [leftX + depthX, leftY - depthY];
-            const l5 = [leftX + size/2 + depthX, leftY - depthY];
-            const l6 = [leftX + depthX, leftY + size - depthY];
-
-            drawFace([l4, l5, l2, l1], 1);
-            drawFace([l2, l5, l6, l3], 1);
-            drawFace([l1, l2, l3], 0);
-
-            // Right triangle piece
-            const rightX = centerX + offset;
-            const rightY = centerY + offset * 0.4;
-            const r1 = [rightX + size/2, rightY];
-            const r2 = [rightX + size, rightY];
-            const r3 = [rightX + size, rightY + size];
-            const r4 = [rightX, rightY + size];
-            const r5 = [rightX + size/2 + depthX, rightY - depthY];
-            const r6 = [rightX + size + depthX, rightY - depthY];
-            const r7 = [rightX + size + depthX, rightY + size - depthY];
-
-            drawFace([r5, r6, r2, r1], 1);
-            drawFace([r2, r6, r7, r3], 2);
-            drawFace([r1, r4, r5], 1);
-            drawFace([r1, r2, r3, r4], 0);
-        }
-
-        // Book opening
-        function drawBook(centerX, centerY, size, bookProgress) {
-            const depthX = size * 0.866;
-            const depthY = size * 0.5;
-            const halfSize = size / 2;
-            const angle = bookProgress * 50 * Math.PI / 180;
-            const spread = bookProgress * 40;
-
-            // Calculate rotation effect
-            const leftRotate = Math.sin(angle) * halfSize;
-            const depthShift = (1 - Math.cos(angle)) * halfSize * 0.5;
-
-            // Left page
-            const lx = centerX - halfSize - spread;
-            const l1 = [lx, centerY];
-            const l2 = [lx + halfSize, centerY];
-            const l3 = [lx + halfSize - leftRotate, centerY + size];
-            const l4 = [lx, centerY + size];
-            const l5 = [lx + depthX - depthShift, centerY - depthY];
-            const l6 = [lx + halfSize + depthX - depthShift, centerY - depthY];
-
-            drawFace([l5, l6, l2, l1], 1);
-            drawFace([l2, l6, l6, l3], 1);
-            drawFace([l1, l2, l3, l4], 0);
-
-            // Right page
-            const rx = centerX + spread;
-            const r1 = [rx, centerY];
-            const r2 = [rx + halfSize, centerY];
-            const r3 = [rx + halfSize, centerY + size];
-            const r4 = [rx + leftRotate, centerY + size];
-            const r5 = [rx + depthX - depthShift, centerY - depthY];
-            const r6 = [rx + halfSize + depthX, centerY - depthY];
-
-            drawFace([r5, r6, r2, r1], 1);
-            drawFace([r2, r6, r6, r3], 2);
-            drawFace([r1, r2, r3, r4], 0);
-
-            // Spine connection
-            drawWobblyLine(l6[0], l6[1], r5[0], r5[1], 0.8);
-        }
-
-        // Slide apart (offset layers)
-        function drawSlide(centerX, centerY, size, slideAmount) {
-            const depth = size * 0.65;
-            const offset = slideAmount * 25;
-
-            // Left half slides left
-            const lx = centerX - size/2 - offset;
-            drawHalfCube(lx, centerY, size, true);
-
-            // Right half slides right and slightly up
-            const rx = centerX + offset;
-            const ry = centerY - offset * 0.3;
-            drawHalfCube(rx, ry, size, false);
-        }
-
-        // Rotate (one half rotates around vertical axis)
-        function drawRotate(centerX, centerY, size, rotateAmount) {
-            const depthX = size * 0.866;
-            const depthY = size * 0.5;
-            const halfSize = size / 2;
-            const angle = rotateAmount * 60 * Math.PI / 180;
-            const squeeze = Math.cos(angle);
-            const lift = Math.sin(angle) * 20;
-
-            // Left half (static)
-            drawHalfCube(centerX - halfSize - rotateAmount * 20, centerY, size, true);
-
-            // Right half (rotating)
-            const rx = centerX + rotateAmount * 20;
-            const ry = centerY - lift;
-            const squeezeSize = halfSize * Math.abs(squeeze);
-
-            if (squeeze > 0) {
-                // Front view of rotation
-                const r1 = [rx, ry];
-                const r2 = [rx + squeezeSize, ry];
-                const r3 = [rx + squeezeSize, ry + size];
-                const r4 = [rx, ry + size];
-                const r5 = [rx + depthX * squeeze, ry - depthY];
-                const r6 = [rx + squeezeSize + depthX * squeeze, ry - depthY];
-
-                drawFace([r5, r6, r2, r1], 1);
-                drawFace([r2, r6, r6, r3], 2);
-                drawFace([r1, r2, r3, r4], 0);
-            }
-        }
-
-        // Flip (one half flips up)
-        function drawFlip(centerX, centerY, size, flipAmount) {
-            const depthX = size * 0.866;
-            const depthY = size * 0.5;
-            const halfSize = size / 2;
-            const angle = flipAmount * 90 * Math.PI / 180;
-
-            // Bottom half (static)
-            const by = centerY + halfSize + flipAmount * 15;
-            const b1 = [centerX, by];
-            const b2 = [centerX + size, by];
-            const b3 = [centerX + size, by + halfSize];
-            const b4 = [centerX, by + halfSize];
-            const b5 = [centerX + depthX, by - depthY];
-            const b6 = [centerX + size + depthX, by - depthY];
-            const b7 = [centerX + size + depthX, by + halfSize - depthY];
-
-            drawFace([b1, b2, b6, b5], 1);
-            drawFace([b2, b6, b7, b3], 2);
-            drawFace([b1, b2, b3, b4], 0);
-
-            // Top half (flipping)
-            const flipHeight = Math.sin(angle) * halfSize;
-            const flipDepth = (1 - Math.cos(angle)) * halfSize;
-            const ty = centerY - flipAmount * 15 - flipDepth;
-
-            const t1 = [centerX, ty + halfSize];
-            const t2 = [centerX + size, ty + halfSize];
-            const t3 = [centerX + size, ty + halfSize - flipHeight];
-            const t4 = [centerX, ty + halfSize - flipHeight];
-            const t5 = [centerX + depthX, ty + halfSize - depthY];
-            const t6 = [centerX + size + depthX, ty + halfSize - depthY];
-
-            if (flipHeight > 2) {
-                drawFace([t5, t6, t2, t1], 1);
-                drawFace([t2, t6, t6, t3], 2);
-                drawFace([t1, t2, t3, t4], 0);
-                drawFace([t4, t3, t6, t5], 1); // Bottom of flipped piece
-            }
-        }
-
-        // Twist (halves twist opposite directions)
-        function drawTwist(centerX, centerY, size, twistAmount) {
-            const depthX = size * 0.866;
-            const depthY = size * 0.5;
-            const halfSize = size / 2;
-            const twist = twistAmount * 30;
-
-            // Left half twists counter-clockwise
-            const lx = centerX - halfSize - twistAmount * 15;
-            const l1 = [lx - twist * 0.2, centerY];
-            const l2 = [lx + halfSize + twist * 0.2, centerY];
-            const l3 = [lx + halfSize - twist * 0.2, centerY + size];
-            const l4 = [lx + twist * 0.2, centerY + size];
-            const l5 = [lx + depthX - twist * 0.2, centerY - depthY];
-            const l6 = [lx + halfSize + depthX + twist * 0.2, centerY - depthY];
-
-            drawFace([l5, l6, l2, l1], 1);
-            drawFace([l2, l6, l6, l3], 1);
-            drawFace([l1, l2, l3, l4], 0);
-
-            // Right half twists clockwise
-            const rx = centerX + twistAmount * 15;
-            const r1 = [rx + twist * 0.2, centerY];
-            const r2 = [rx + halfSize - twist * 0.2, centerY];
-            const r3 = [rx + halfSize + twist * 0.2, centerY + size];
-            const r4 = [rx - twist * 0.2, centerY + size];
-            const r5 = [rx + depthX + twist * 0.2, centerY - depthY];
-            const r6 = [rx + halfSize + depthX - twist * 0.2, centerY - depthY];
-
-            drawFace([r5, r6, r2, r1], 1);
-            drawFace([r2, r6, r6, r3], 2);
-            drawFace([r1, r2, r3, r4], 0);
-        }
-
-        // Unfold (like opening a box)
-        function drawUnfold(centerX, centerY, size, unfoldAmount) {
-            const depthX = size * 0.866;
-            const depthY = size * 0.5;
-            const halfSize = size / 2;
-            const angle = unfoldAmount * 70 * Math.PI / 180;
-            const spread = unfoldAmount * 35;
-
-            // Left half folds outward
-            const leftLift = Math.sin(angle) * halfSize * 0.6;
-            const lx = centerX - halfSize - spread;
-            const ly = centerY + leftLift;
-
-            const l1 = [lx, ly];
-            const l2 = [lx + halfSize, ly];
-            const l3 = [lx + halfSize, ly + size - leftLift];
-            const l4 = [lx, ly + size];
-            const l5 = [lx + depthX, ly - depthY];
-            const l6 = [lx + halfSize + depthX, ly - depthY];
-
-            drawFace([l5, l6, l2, l1], 1);
-            drawFace([l2, l6, l6, l3], 1);
-            drawFace([l1, l2, l3, l4], 0);
-
-            // Right half folds outward opposite direction
-            const rx = centerX + spread;
-            const ry = centerY + leftLift;
-
-            const r1 = [rx, ry];
-            const r2 = [rx + halfSize, ry];
-            const r3 = [rx + halfSize, ry + size];
-            const r4 = [rx, ry + size - leftLift];
-            const r5 = [rx + depthX, ry - depthY];
-            const r6 = [rx + halfSize + depthX, ry - depthY];
-
-            drawFace([r5, r6, r2, r1], 1);
-            drawFace([r2, r6, r6, r3], 2);
-            drawFace([r1, r2, r3, r4], 0);
-        }
-
-        // Separate (clean separation with visible depth)
-        function drawSeparate(centerX, centerY, size, separateAmount) {
-            const sep = separateAmount * 45;
-            drawHalfCube(centerX - size/2 - sep, centerY - sep * 0.2, size, true);
-            drawHalfCube(centerX + sep, centerY + sep * 0.2, size, false);
-        }
-
-        // Pivot (one half pivots on bottom edge)
-        function drawPivot(centerX, centerY, size, pivotAmount) {
-            const depthX = size * 0.866;
-            const depthY = size * 0.5;
-            const halfSize = size / 2;
-            const angle = pivotAmount * 45 * Math.PI / 180;
-
-            // Right half (static)
-            drawHalfCube(centerX + pivotAmount * 20, centerY, size, false);
-
-            // Left half (pivoting from bottom)
-            const pivotX = centerX - halfSize - pivotAmount * 20;
-            const pivotY = centerY;
-            const tilt = Math.sin(angle) * halfSize * 0.8;
-            const raise = (1 - Math.cos(angle)) * halfSize * 0.3;
-
-            const l1 = [pivotX - tilt, pivotY - raise];
-            const l2 = [pivotX + halfSize, pivotY - raise];
-            const l3 = [pivotX + halfSize, pivotY + size];
-            const l4 = [pivotX, pivotY + size];
-            const l5 = [pivotX + depthX - tilt, pivotY - depthY - raise];
-            const l6 = [pivotX + halfSize + depthX, pivotY - depthY - raise];
-
-            drawFace([l5, l6, l2, l1], 1);
-            drawFace([l2, l6, l6, l3], 1);
-            drawFace([l1, l2, l3, l4], 0);
-        }
-
-        // Crumble (splits and fragments slightly)
-        function drawCrumble(centerX, centerY, size, crumbleAmount) {
-            const depth = size * 0.65;
-            const halfSize = size / 2;
-            const shake = Math.sin(crumbleAmount * Math.PI * 3) * 3 * crumbleAmount;
-            const spread = crumbleAmount * 35;
-            const drop = crumbleAmount * 15;
-
-            // Left fragments
-            const lx = centerX - halfSize - spread - shake;
-            const ly = centerY + drop;
-            drawHalfCube(lx, ly, size, true);
-
-            // Right fragments
-            const rx = centerX + spread + shake;
-            const ry = centerY + drop * 0.7;
-            drawHalfCube(rx, ry, size, false);
-
-            // Add some small fragment indicators
-            if (crumbleAmount > 0.3) {
-                ctx.globalAlpha = crumbleAmount * 0.5;
-                const fragment1X = centerX - spread * 0.5;
-                const fragment1Y = centerY + size/2 + drop * 1.5;
-                drawWobblyLine(fragment1X, fragment1Y, fragment1X + 10, fragment1Y, 0.5);
-                drawWobblyLine(fragment1X, fragment1Y, fragment1X, fragment1Y + 10, 0.5);
-
-                const fragment2X = centerX + spread * 0.5;
-                const fragment2Y = centerY + size/2 + drop * 1.2;
-                drawWobblyLine(fragment2X, fragment2Y, fragment2X + 8, fragment2Y, 0.5);
-                drawWobblyLine(fragment2X, fragment2Y, fragment2X, fragment2Y + 8, 0.5);
-                ctx.globalAlpha = 1;
-            }
-        }
-
         function animate() {
             progress += (targetProgress - progress) * 0.08;
 
@@ -618,59 +190,15 @@
             if (progress < 0.05) {
                 drawCube(centerX, centerY, size);
             } else {
-                switch(mode) {
-                    case 'horizontal':
-                        drawHorizontal(centerX, centerY, size, progress * 80);
-                        break;
-                    case 'vertical':
-                        drawVertical(centerX, centerY, size, progress * 80);
-                        break;
-                    case 'diagonal':
-                        drawDiagonal(centerX, centerY, size, progress * 80);
-                        break;
-                    case 'book':
-                        drawBook(centerX, centerY, size, progress);
-                        break;
-                    case 'slide':
-                        drawSlide(centerX, centerY, size, progress);
-                        break;
-                    case 'rotate':
-                        drawRotate(centerX, centerY, size, progress);
-                        break;
-                    case 'flip':
-                        drawFlip(centerX, centerY, size, progress);
-                        break;
-                    case 'twist':
-                        drawTwist(centerX, centerY, size, progress);
-                        break;
-                    case 'unfold':
-                        drawUnfold(centerX, centerY, size, progress);
-                        break;
-                    case 'separate':
-                        drawSeparate(centerX, centerY, size, progress);
-                        break;
-                    case 'pivot':
-                        drawPivot(centerX, centerY, size, progress);
-                        break;
-                    case 'crumble':
-                        drawCrumble(centerX, centerY, size, progress);
-                        break;
-                }
+                drawHorizontal(centerX, centerY, size, progress * 80);
             }
 
             requestAnimationFrame(animate);
         }
 
         canvas.addEventListener('click', () => {
-            mode = modes[Math.floor(Math.random() * modes.length)];
             targetProgress = targetProgress === 0 ? 1 : 0;
         });
-
-        // Auto-play on load
-        setTimeout(() => {
-            mode = modes[Math.floor(Math.random() * modes.length)];
-            targetProgress = 1;
-        }, 500);
 
         animate();
     </script>
