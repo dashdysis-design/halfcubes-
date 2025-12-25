@@ -171,11 +171,38 @@
             }
         }
 
-        // Horizontal split
-        function drawHorizontal(centerX, centerY, size, splitAmount) {
-            const halfSize = size / 2;
-            drawHalfCube(centerX - halfSize - splitAmount, centerY, size, true);
-            drawHalfCube(centerX + splitAmount, centerY, size, false);
+        // Diagonal X-cut split
+        function drawDiagonalXCut(centerX, centerY, size, splitAmount) {
+            const depthX = size * 0.866;
+            const depthY = size * 0.5;
+            const offset = splitAmount * 0.7;
+
+            // Top-left triangular piece (moves up-left)
+            const tl_x = centerX - offset;
+            const tl_y = centerY - offset * 0.5;
+            const tl1 = [tl_x, tl_y];
+            const tl2 = [tl_x + size, tl_y];
+            const tl3 = [tl_x + size/2, tl_y + size/2];
+            const tl4 = [tl_x + depthX, tl_y - depthY];
+            const tl5 = [tl_x + size + depthX, tl_y - depthY];
+            const tl6 = [tl_x + size/2 + depthX, tl_y + size/2 - depthY];
+
+            drawFace([tl4, tl5, tl2, tl1], 1);
+            drawFace([tl2, tl5, tl6, tl3], 2);
+            drawFace([tl1, tl2, tl3], 0);
+
+            // Bottom-right triangular piece (moves down-right)
+            const br_x = centerX + offset;
+            const br_y = centerY + offset * 0.5;
+            const br1 = [br_x + size/2, br_y + size/2];
+            const br2 = [br_x + size, br_y + size];
+            const br3 = [br_x, br_y + size];
+            const br4 = [br_x + size/2 + depthX, br_y + size/2 - depthY];
+            const br5 = [br_x + size + depthX, br_y + size - depthY];
+            const br6 = [br_x + depthX, br_y + size - depthY];
+
+            drawFace([br4, br5, br2, br1], 2);
+            drawFace([br1, br2, br3], 0);
         }
 
         function animate() {
@@ -190,7 +217,7 @@
             if (progress < 0.05) {
                 drawCube(centerX, centerY, size);
             } else {
-                drawHorizontal(centerX, centerY, size, progress * 80);
+                drawDiagonalXCut(centerX, centerY, size, progress * 80);
             }
 
             requestAnimationFrame(animate);
