@@ -52,7 +52,10 @@
 
     <script>
         const canvas = document.getElementById('canvas');
-        const iso = new Isomer(canvas);
+        const iso = new Isomer(canvas, {
+            originX: canvas.width / 2,
+            originY: canvas.height / 2
+        });
 
         let progress = 0;
         let targetProgress = 0;
@@ -70,13 +73,13 @@
             const splitDist = progress * 0.8;
 
             if (progress < 0.05) {
-                // Draw whole cube
-                iso.add(new Isomer.Shape.Prism(new Isomer.Point(0, 0, 0), 2, 2, 2), red);
+                // Draw whole cube centered at origin
+                iso.add(new Isomer.Shape.Prism(new Isomer.Point(-1, -1, 0), 2, 2, 2), red);
             } else {
                 // Draw front half (left)
-                iso.add(new Isomer.Shape.Prism(new Isomer.Point(-splitDist, 0, 0), 1, 2, 2), red);
+                iso.add(new Isomer.Shape.Prism(new Isomer.Point(-1 - splitDist, -1, 0), 1, 2, 2), red);
                 // Draw back half (right)
-                iso.add(new Isomer.Shape.Prism(new Isomer.Point(1 + splitDist, 0, 0), 1, 2, 2), red);
+                iso.add(new Isomer.Shape.Prism(new Isomer.Point(splitDist, -1, 0), 1, 2, 2), red);
             }
 
             requestAnimationFrame(animate);
