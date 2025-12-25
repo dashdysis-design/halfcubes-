@@ -94,32 +94,28 @@
             }
         }
 
-        function drawCube(offsetX, offsetY, size) {
-            // True isometric projection for a cube
-            // X-axis goes right and down: (0.866, 0.5) * size
-            // Y-axis goes left and down: (-0.866, 0.5) * size
-            // Z-axis goes straight up: (0, -1) * size
-
+        function drawCube(centerX, centerY, size) {
+            // Isometric cube: all edges equal length
+            // Using 30° angles for true isometric
             const s = size;
 
-            // Bottom face vertices
-            const v0 = [offsetX, offsetY + s]; // origin
-            const v1 = [offsetX + s * 0.866, offsetY + s + s * 0.5]; // +X
-            const v2 = [offsetX, offsetY + s + s]; // +Y
-            const v3 = [offsetX - s * 0.866, offsetY + s + s * 0.5]; // +X+Y
+            // 8 vertices of cube in isometric projection
+            // Bottom square
+            const v0 = [centerX, centerY + s];
+            const v1 = [centerX + s * 0.866, centerY + s * 0.5];
+            const v2 = [centerX, centerY];
+            const v3 = [centerX - s * 0.866, centerY + s * 0.5];
 
-            // Top face vertices (same but shifted up by size)
-            const v4 = [offsetX, offsetY]; // origin + Z
-            const v5 = [offsetX + s * 0.866, offsetY + s * 0.5]; // +X + Z
-            const v6 = [offsetX, offsetY + s]; // +Y + Z
-            const v7 = [offsetX - s * 0.866, offsetY + s * 0.5]; // +X+Y + Z
+            // Top square (shifted up by s)
+            const v4 = [centerX, centerY + s - s];
+            const v5 = [centerX + s * 0.866, centerY + s * 0.5 - s];
+            const v6 = [centerX, centerY - s];
+            const v7 = [centerX - s * 0.866, centerY + s * 0.5 - s];
 
-            // Draw faces (back to front for proper occlusion)
-            drawFace([v3, v7, v6, v2], '#B22222'); // Back face
-            drawFace([v2, v6, v4, v0], '#CD5C5C'); // Left face
+            // Draw visible faces
+            drawFace([v3, v7, v6, v2], '#B22222'); // Left face
             drawFace([v0, v4, v5, v1], '#DC143C'); // Right face
-            drawFace([v1, v5, v7, v3], '#FF6347'); // Front face
-            drawFace([v4, v5, v7, v6], '#FF7F50'); // Top face
+            drawFace([v4, v5, v6, v7], '#FF6347'); // Top face
         }
 
         // Draw half cube with enhanced 3D
@@ -165,56 +161,54 @@
             }
         }
 
-        // Depth split (front and back halves) - isometric
+        // Depth split (front and back halves)
         function drawDepthSplit(centerX, centerY, size, splitAmount) {
             const s = size;
-            const offset = splitAmount * 0.433; // Split offset
+            const halfS = s / 2;
 
-            // FRONT HALF - moves left
-            const fx = centerX - offset;
-            const fy = centerY + s;
+            // Front half moves left-back
+            const offset1 = -splitAmount * 0.433;
+            const fx = centerX + offset1;
+            const fy = centerY + offset1 * 0.5;
 
-            // Front half bottom vertices (half depth in Y direction)
-            const f0 = [fx, fy];
+            // Front half vertices (front half of cube depth)
+            const f0 = [fx, fy + s];
             const f1 = [fx + s * 0.866, fy + s * 0.5];
-            const f2 = [fx, fy + s * 0.5]; // Half depth
-            const f3 = [fx - s * 0.866, fy]; // Closing the trapezoid
+            const f2 = [fx, fy + halfS];
+            const f3 = [fx - s * 0.866, fy + s - halfS * 0.5];
 
-            // Front half top vertices
-            const f4 = [fx, fy - s];
+            const f4 = [fx, fy];
             const f5 = [fx + s * 0.866, fy - s * 0.5];
-            const f6 = [fx, fy - s * 0.5]; // Half depth
-            const f7 = [fx - s * 0.866, fy - s]; // Closing the trapezoid
+            const f6 = [fx, fy - halfS];
+            const f7 = [fx - s * 0.866, fy - halfS * 0.5];
 
-            // BACK HALF - moves right
-            const bx = centerX + offset;
-            const by = centerY + s + s * 0.5;
+            // Back half moves right-forward
+            const offset2 = splitAmount * 0.433;
+            const bx = centerX + offset2;
+            const by = centerY + halfS + offset2 * 0.5;
 
-            // Back half bottom vertices (starts at middle depth)
-            const b0 = [bx, by];
-            const b1 = [bx + s * 0.866, by + s * 0.5];
-            const b2 = [bx, by + s * 0.5];
+            // Back half vertices (back half of cube depth)
+            const b0 = [bx, by + halfS];
+            const b1 = [bx + s * 0.866, by];
+            const b2 = [bx, by - halfS];
             const b3 = [bx - s * 0.866, by];
 
-            // Back half top vertices
-            const b4 = [bx, by - s];
-            const b5 = [bx + s * 0.866, by - s * 0.5];
-            const b6 = [bx, by - s * 0.5];
+            const b4 = [bx, by + halfS - s];
+            const b5 = [bx + s * 0.866, by - s];
+            const b6 = [bx, by - halfS - s];
             const b7 = [bx - s * 0.866, by - s];
 
             // Draw front half
-            drawFace([f0, f4, f5, f1], '#DC143C'); // Right face
-            drawFace([f1, f5, f7, f3], '#FF6347'); // Front face
-            drawFace([f4, f5, f7, f6], '#FF7F50'); // Top face
-            drawFace([f2, f6, f5, f1], '#8B0000'); // Cut surface (dark)
-            drawFace([f3, f7, f6, f2], '#CD5C5C'); // Left face
+            drawFace([f3, f7, f6, f2], '#B22222'); // Left
+            drawFace([f0, f4, f5, f1], '#DC143C'); // Right
+            drawFace([f4, f5, f6, f7], '#FF6347'); // Top
+            drawFace([f1, f5, f6, f2], '#8B0000'); // Cut surface
 
             // Draw back half
-            drawFace([b2, b6, b4, b0], '#CD5C5C'); // Left face
-            drawFace([b0, b4, b5, b1], '#DC143C'); // Right face
-            drawFace([b3, b7, b6, b2], '#B22222'); // Back face
-            drawFace([b4, b5, b7, b6], '#FF7F50'); // Top face
-            drawFace([b0, b4, b7, b3], '#8B0000'); // Cut surface (dark)
+            drawFace([b0, b4, b7, b3], '#8B0000'); // Cut surface
+            drawFace([b3, b7, b6, b2], '#B22222'); // Left
+            drawFace([b0, b4, b5, b1], '#DC143C'); // Right
+            drawFace([b4, b5, b6, b7], '#FF6347'); // Top
         }
 
         function animate() {
