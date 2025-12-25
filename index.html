@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Halfcubes</title>
+    <script src="https://cdn.jsdelivr.net/npm/isomer@0.2.6/dist/isomer.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -54,176 +55,31 @@
 
     <script>
         const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
+        const iso = new Isomer(canvas);
 
         let progress = 0;
         let targetProgress = 0;
 
-        // Draw a smooth line
-        function drawLine(x1, y1, x2, y2) {
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.strokeStyle = '#8B0000';
-            ctx.lineWidth = 2;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            ctx.stroke();
-        }
-
-        // Draw a filled face with color and shading
-        function drawFace(points, color, drawEdges = true) {
-            if (points.length < 3) return;
-
-            // Fill the face
-            ctx.beginPath();
-            ctx.moveTo(points[0][0], points[0][1]);
-            for (let i = 1; i < points.length; i++) {
-                ctx.lineTo(points[i][0], points[i][1]);
-            }
-            ctx.closePath();
-            ctx.fillStyle = color;
-            ctx.fill();
-
-            // Draw edges
-            if (drawEdges) {
-                for (let i = 0; i < points.length; i++) {
-                    const next = (i + 1) % points.length;
-                    drawLine(points[i][0], points[i][1], points[next][0], points[next][1]);
-                }
-            }
-        }
-
-        function drawCube(centerX, centerY, size) {
-            // Isometric cube: all edges equal length
-            // Using 30° angles for true isometric
-            const s = size;
-
-            // 8 vertices of cube in isometric projection
-            // Bottom square
-            const v0 = [centerX, centerY + s];
-            const v1 = [centerX + s * 0.866, centerY + s * 0.5];
-            const v2 = [centerX, centerY];
-            const v3 = [centerX - s * 0.866, centerY + s * 0.5];
-
-            // Top square (shifted up by s)
-            const v4 = [centerX, centerY + s - s];
-            const v5 = [centerX + s * 0.866, centerY + s * 0.5 - s];
-            const v6 = [centerX, centerY - s];
-            const v7 = [centerX - s * 0.866, centerY + s * 0.5 - s];
-
-            // Draw visible faces
-            drawFace([v3, v7, v6, v2], '#B22222'); // Left face
-            drawFace([v0, v4, v5, v1], '#DC143C'); // Right face
-            drawFace([v4, v5, v6, v7], '#FF6347'); // Top face
-        }
-
-        // Draw half cube with enhanced 3D
-        function drawHalfCube(offsetX, offsetY, size, isLeft, rotation = 0) {
-            const depthX = size * 0.866;
-            const depthY = size * 0.5;
-            const halfSize = size / 2;
-
-            if (isLeft) {
-                const frontTL = [offsetX, offsetY];
-                const frontTR = [offsetX + halfSize, offsetY];
-                const frontBR = [offsetX + halfSize, offsetY + size];
-                const frontBL = [offsetX, offsetY + size];
-                const backTL = [offsetX + depthX, offsetY - depthY];
-                const backTR = [offsetX + halfSize + depthX, offsetY - depthY];
-                const backBR = [offsetX + halfSize + depthX, offsetY + size - depthY];
-                const backBL = [offsetX + depthX, offsetY + size - depthY];
-
-                // Draw the split face (newly exposed interior)
-                drawFace([frontTR, backTR, backBR, frontBR], 1);
-                // Top face
-                drawFace([backTL, backTR, frontTR, frontTL], 1);
-                // Front face
-                drawFace([frontTL, frontTR, frontBR, frontBL], 0);
-            } else {
-                const frontTL = [offsetX, offsetY];
-                const frontTR = [offsetX + halfSize, offsetY];
-                const frontBR = [offsetX + halfSize, offsetY + size];
-                const frontBL = [offsetX, offsetY + size];
-                const backTL = [offsetX + depthX, offsetY - depthY];
-                const backTR = [offsetX + halfSize + depthX, offsetY - depthY];
-                const backBR = [offsetX + halfSize + depthX, offsetY + size - depthY];
-                const backBL = [offsetX + depthX, offsetY + size - depthY];
-
-                // Draw the split face
-                drawFace([frontTL, backTL, backBL, frontBL], 1);
-                // Top face
-                drawFace([backTL, backTR, frontTR, frontTL], 1);
-                // Right face
-                drawFace([frontTR, backTR, backBR, frontBR], 2);
-                // Front face
-                drawFace([frontTL, frontTR, frontBR, frontBL], 0);
-            }
-        }
-
-        // Depth split (front and back halves)
-        function drawDepthSplit(centerX, centerY, size, splitAmount) {
-            const s = size;
-            const halfS = s / 2;
-
-            // Front half moves left-back
-            const offset1 = -splitAmount * 0.433;
-            const fx = centerX + offset1;
-            const fy = centerY + offset1 * 0.5;
-
-            // Front half vertices (front half of cube depth)
-            const f0 = [fx, fy + s];
-            const f1 = [fx + s * 0.866, fy + s * 0.5];
-            const f2 = [fx, fy + halfS];
-            const f3 = [fx - s * 0.866, fy + s - halfS * 0.5];
-
-            const f4 = [fx, fy];
-            const f5 = [fx + s * 0.866, fy - s * 0.5];
-            const f6 = [fx, fy - halfS];
-            const f7 = [fx - s * 0.866, fy - halfS * 0.5];
-
-            // Back half moves right-forward
-            const offset2 = splitAmount * 0.433;
-            const bx = centerX + offset2;
-            const by = centerY + halfS + offset2 * 0.5;
-
-            // Back half vertices (back half of cube depth)
-            const b0 = [bx, by + halfS];
-            const b1 = [bx + s * 0.866, by];
-            const b2 = [bx, by - halfS];
-            const b3 = [bx - s * 0.866, by];
-
-            const b4 = [bx, by + halfS - s];
-            const b5 = [bx + s * 0.866, by - s];
-            const b6 = [bx, by - halfS - s];
-            const b7 = [bx - s * 0.866, by - s];
-
-            // Draw front half
-            drawFace([f3, f7, f6, f2], '#B22222'); // Left
-            drawFace([f0, f4, f5, f1], '#DC143C'); // Right
-            drawFace([f4, f5, f6, f7], '#FF6347'); // Top
-            drawFace([f1, f5, f6, f2], '#8B0000'); // Cut surface
-
-            // Draw back half
-            drawFace([b0, b4, b7, b3], '#8B0000'); // Cut surface
-            drawFace([b3, b7, b6, b2], '#B22222'); // Left
-            drawFace([b0, b4, b5, b1], '#DC143C'); // Right
-            drawFace([b4, b5, b6, b7], '#FF6347'); // Top
-        }
+        const red = new Isomer.Color(220, 50, 50);
+        const darkRed = new Isomer.Color(100, 20, 20);
 
         function animate() {
             progress += (targetProgress - progress) * 0.08;
 
+            // Clear canvas
+            const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            const centerX = canvas.width / 2 - 70;
-            const centerY = canvas.height / 2 - 70;
-            const size = 140;
+            const splitDist = progress * 1.5;
 
             if (progress < 0.05) {
-                drawCube(centerX, centerY, size);
+                // Draw whole cube
+                iso.add(new Isomer.Shape.Prism(new Isomer.Point(0, 0, 0), 2, 2, 2), red);
             } else {
-                drawDepthSplit(centerX, centerY, size, progress * 80);
+                // Draw front half (left)
+                iso.add(new Isomer.Shape.Prism(new Isomer.Point(-splitDist, 0, 0), 1, 2, 2), red);
+                // Draw back half (right)
+                iso.add(new Isomer.Shape.Prism(new Isomer.Point(1 + splitDist, 0, 0), 1, 2, 2), red);
             }
 
             requestAnimationFrame(animate);
