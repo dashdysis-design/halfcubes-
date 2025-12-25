@@ -59,73 +59,61 @@
         let progress = 0;
         let targetProgress = 0;
 
-        // Enhanced hand-drawn line with more wobble variation
-        function drawWobblyLine(x1, y1, x2, y2, intensity = 1) {
+        // Draw a smooth line
+        function drawLine(x1, y1, x2, y2) {
             ctx.beginPath();
             ctx.moveTo(x1, y1);
-
-            const steps = 25;
-            for (let i = 1; i <= steps; i++) {
-                const t = i / steps;
-                const x = x1 + (x2 - x1) * t;
-                const y = y1 + (y2 - y1) * t;
-                const wobble = Math.sin(t * Math.PI * 5) * 0.6 * intensity;
-                const microWobble = Math.sin(t * Math.PI * 15) * 0.2 * intensity;
-                ctx.lineTo(x + wobble + microWobble, y + wobble + microWobble);
-            }
-
-            ctx.strokeStyle = '#2a2a2a';
-            ctx.lineWidth = 2.5;
+            ctx.lineTo(x2, y2);
+            ctx.strokeStyle = '#8B0000';
+            ctx.lineWidth = 2;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
             ctx.stroke();
         }
 
-        // Draw a filled face with subtle shading effect
-        function drawFace(points, shade = 0) {
+        // Draw a filled face with color and shading
+        function drawFace(points, color, drawEdges = true) {
             if (points.length < 3) return;
 
-            // Fill with very subtle shade
-            if (shade > 0) {
-                ctx.beginPath();
-                ctx.moveTo(points[0][0], points[0][1]);
-                for (let i = 1; i < points.length; i++) {
-                    ctx.lineTo(points[i][0], points[i][1]);
-                }
-                ctx.closePath();
-                const alpha = 0.02 + (shade * 0.03);
-                ctx.fillStyle = `rgba(0,0,0,${alpha})`;
-                ctx.fill();
+            // Fill the face
+            ctx.beginPath();
+            ctx.moveTo(points[0][0], points[0][1]);
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i][0], points[i][1]);
             }
+            ctx.closePath();
+            ctx.fillStyle = color;
+            ctx.fill();
 
             // Draw edges
-            for (let i = 0; i < points.length; i++) {
-                const next = (i + 1) % points.length;
-                drawWobblyLine(points[i][0], points[i][1], points[next][0], points[next][1]);
+            if (drawEdges) {
+                for (let i = 0; i < points.length; i++) {
+                    const next = (i + 1) % points.length;
+                    drawLine(points[i][0], points[i][1], points[next][0], points[next][1]);
+                }
             }
         }
 
         function drawCube(offsetX, offsetY, size) {
-            // True isometric projection: 30° angle
-            // depthX = cos(30°) * size = 0.866 * size
-            // depthY = sin(30°) * size = 0.5 * size
-            const depthX = size * 0.866;  // horizontal depth (sqrt(3)/2)
-            const depthY = size * 0.5;    // vertical depth (1/2)
+            // True isometric projection: equal angles for all three visible faces
+            const iso = size * Math.cos(Math.PI / 6); // ~0.866
+            const isoY = size * Math.sin(Math.PI / 6); // 0.5
 
-            // Define all points with proper isometric perspective
+            // Define cube vertices
+            const frontBL = [offsetX, offsetY + size];
+            const frontBR = [offsetX + size, offsetY + size];
             const frontTL = [offsetX, offsetY];
             const frontTR = [offsetX + size, offsetY];
-            const frontBR = [offsetX + size, offsetY + size];
-            const frontBL = [offsetX, offsetY + size];
-            const backTL = [offsetX + depthX, offsetY - depthY];
-            const backTR = [offsetX + size + depthX, offsetY - depthY];
-            const backBR = [offsetX + size + depthX, offsetY + size - depthY];
-            const backBL = [offsetX + depthX, offsetY + size - depthY];
+            const backBL = [offsetX + iso, offsetY + size - isoY];
+            const backBR = [offsetX + size + iso, offsetY + size - isoY];
+            const backTL = [offsetX + iso, offsetY - isoY];
+            const backTR = [offsetX + size + iso, offsetY - isoY];
 
-            // Draw faces with subtle shading (back to front)
-            drawFace([backTL, backTR, frontTR, frontTL], 1); // Top face
-            drawFace([frontTR, backTR, backBR, frontBR], 2); // Right face
-            drawFace([frontTL, frontTR, frontBR, frontBL], 0); // Front face
+            // Draw faces (back to front)
+            drawFace([backTL, backTR, backBR, backBL], '#B22222'); // Back face (darker)
+            drawFace([backTL, backTR, frontTR, frontTL], '#DC143C'); // Top face (medium)
+            drawFace([frontTR, backTR, backBR, frontBR], '#CD5C5C'); // Right face (lighter)
+            drawFace([frontTL, frontTR, frontBR, frontBL], '#FF6347'); // Front face (brightest)
         }
 
         // Draw half cube with enhanced 3D
@@ -173,36 +161,43 @@
 
         // Diagonal X-cut split
         function drawDiagonalXCut(centerX, centerY, size, splitAmount) {
-            const depthX = size * 0.866;
-            const depthY = size * 0.5;
-            const offset = splitAmount * 0.7;
+            const iso = size * Math.cos(Math.PI / 6);
+            const isoY = size * Math.sin(Math.PI / 6);
+            const offset = splitAmount * 0.8;
 
-            // Top-left triangular piece (moves up-left)
-            const tl_x = centerX - offset;
-            const tl_y = centerY - offset * 0.5;
-            const tl1 = [tl_x, tl_y];
-            const tl2 = [tl_x + size, tl_y];
-            const tl3 = [tl_x + size/2, tl_y + size/2];
-            const tl4 = [tl_x + depthX, tl_y - depthY];
-            const tl5 = [tl_x + size + depthX, tl_y - depthY];
-            const tl6 = [tl_x + size/2 + depthX, tl_y + size/2 - depthY];
+            // Top-left wedge (moves up-left)
+            const ox1 = -offset;
+            const oy1 = -offset * 0.5;
 
-            drawFace([tl4, tl5, tl2, tl1], 1);
-            drawFace([tl2, tl5, tl6, tl3], 2);
-            drawFace([tl1, tl2, tl3], 0);
+            const tl_frontTL = [centerX + ox1, centerY + oy1];
+            const tl_frontTR = [centerX + size + ox1, centerY + oy1];
+            const tl_frontCenter = [centerX + size/2 + ox1, centerY + size/2 + oy1];
+            const tl_backTL = [centerX + iso + ox1, centerY - isoY + oy1];
+            const tl_backTR = [centerX + size + iso + ox1, centerY - isoY + oy1];
+            const tl_backCenter = [centerX + size/2 + iso + ox1, centerY + size/2 - isoY + oy1];
 
-            // Bottom-right triangular piece (moves down-right)
-            const br_x = centerX + offset;
-            const br_y = centerY + offset * 0.5;
-            const br1 = [br_x + size/2, br_y + size/2];
-            const br2 = [br_x + size, br_y + size];
-            const br3 = [br_x, br_y + size];
-            const br4 = [br_x + size/2 + depthX, br_y + size/2 - depthY];
-            const br5 = [br_x + size + depthX, br_y + size - depthY];
-            const br6 = [br_x + depthX, br_y + size - depthY];
+            // Draw top-left wedge faces
+            drawFace([tl_backTL, tl_backTR, tl_frontTR, tl_frontTL], '#DC143C'); // Top
+            drawFace([tl_frontTR, tl_backTR, tl_backCenter, tl_frontCenter], '#CD5C5C'); // Right
+            drawFace([tl_frontTL, tl_frontTR, tl_frontCenter], '#FF6347'); // Front
+            drawFace([tl_frontTL, tl_frontCenter, tl_backCenter, tl_backTL], '#8B0000'); // Interior cut (dark shadow)
 
-            drawFace([br4, br5, br2, br1], 2);
-            drawFace([br1, br2, br3], 0);
+            // Bottom-right wedge (moves down-right)
+            const ox2 = offset;
+            const oy2 = offset * 0.5;
+
+            const br_frontBL = [centerX + ox2, centerY + size + oy2];
+            const br_frontBR = [centerX + size + ox2, centerY + size + oy2];
+            const br_frontCenter = [centerX + size/2 + ox2, centerY + size/2 + oy2];
+            const br_backBL = [centerX + iso + ox2, centerY + size - isoY + oy2];
+            const br_backBR = [centerX + size + iso + ox2, centerY + size - isoY + oy2];
+            const br_backCenter = [centerX + size/2 + iso + ox2, centerY + size/2 - isoY + oy2];
+
+            // Draw bottom-right wedge faces
+            drawFace([br_frontCenter, br_backCenter, br_backBR, br_frontBR], '#CD5C5C'); // Right
+            drawFace([br_frontBL, br_frontBR, br_frontCenter], '#FF6347'); // Front
+            drawFace([br_frontBL, br_frontCenter, br_backCenter, br_backBL], '#B22222'); // Left side
+            drawFace([br_frontCenter, br_backCenter, br_backBL, br_frontBL], '#8B0000'); // Interior cut (dark shadow)
         }
 
         function animate() {
