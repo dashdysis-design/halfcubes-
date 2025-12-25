@@ -159,48 +159,48 @@
             }
         }
 
-        // Horizontal split
-        function drawHorizontalSplit(centerX, centerY, size, splitAmount) {
+        // Vertical split (top and bottom halves)
+        function drawVerticalSplit(centerX, centerY, size, splitAmount) {
             const iso = size * Math.cos(Math.PI / 6);
             const isoY = size * Math.sin(Math.PI / 6);
             const halfSize = size / 2;
 
-            // Left half (moves left)
-            const leftOffset = -splitAmount;
-            const lx = centerX + leftOffset;
+            // Top half (moves left)
+            const topOffsetX = -splitAmount * 0.6;
+            const topOffsetY = 0;
 
-            const left_frontTL = [lx, centerY];
-            const left_frontBL = [lx, centerY + size];
-            const left_frontTR = [lx + halfSize, centerY];
-            const left_frontBR = [lx + halfSize, centerY + size];
-            const left_backTL = [lx + iso, centerY - isoY];
-            const left_backBL = [lx + iso, centerY + size - isoY];
-            const left_backTR = [lx + halfSize + iso, centerY - isoY];
-            const left_backBR = [lx + halfSize + iso, centerY + size - isoY];
+            const top_frontTL = [centerX + topOffsetX, centerY + topOffsetY];
+            const top_frontTR = [centerX + size + topOffsetX, centerY + topOffsetY];
+            const top_frontBL = [centerX + topOffsetX, centerY + halfSize + topOffsetY];
+            const top_frontBR = [centerX + size + topOffsetX, centerY + halfSize + topOffsetY];
+            const top_backTL = [centerX + iso + topOffsetX, centerY - isoY + topOffsetY];
+            const top_backTR = [centerX + size + iso + topOffsetX, centerY - isoY + topOffsetY];
+            const top_backBL = [centerX + iso + topOffsetX, centerY + halfSize - isoY + topOffsetY];
+            const top_backBR = [centerX + size + iso + topOffsetX, centerY + halfSize - isoY + topOffsetY];
 
-            // Draw left half
-            drawFace([left_backTL, left_backTR, left_frontTR, left_frontTL], '#DC143C'); // Top
-            drawFace([left_frontTL, left_frontTR, left_frontBR, left_frontBL], '#FF6347'); // Front
-            drawFace([left_frontTR, left_backTR, left_backBR, left_frontBR], '#8B0000'); // Cut surface (dark)
+            // Draw top half
+            drawFace([top_backTL, top_backTR, top_frontTR, top_frontTL], '#DC143C'); // Top
+            drawFace([top_frontTR, top_backTR, top_backBR, top_frontBR], '#CD5C5C'); // Right
+            drawFace([top_frontTL, top_frontTR, top_frontBR, top_frontBL], '#FF6347'); // Front
+            drawFace([top_frontBL, top_frontBR, top_backBR, top_backBL], '#8B0000'); // Bottom cut surface (dark)
 
-            // Right half (moves right)
-            const rightOffset = splitAmount;
-            const rx = centerX + halfSize + rightOffset;
+            // Bottom half (moves right)
+            const botOffsetX = splitAmount * 0.6;
+            const botOffsetY = 0;
 
-            const right_frontTL = [rx, centerY];
-            const right_frontBL = [rx, centerY + size];
-            const right_frontTR = [rx + halfSize, centerY];
-            const right_frontBR = [rx + halfSize, centerY + size];
-            const right_backTL = [rx + iso, centerY - isoY];
-            const right_backBL = [rx + iso, centerY + size - isoY];
-            const right_backTR = [rx + halfSize + iso, centerY - isoY];
-            const right_backBR = [rx + halfSize + iso, centerY + size - isoY];
+            const bot_frontTL = [centerX + botOffsetX, centerY + halfSize + botOffsetY];
+            const bot_frontTR = [centerX + size + botOffsetX, centerY + halfSize + botOffsetY];
+            const bot_frontBL = [centerX + botOffsetX, centerY + size + botOffsetY];
+            const bot_frontBR = [centerX + size + botOffsetX, centerY + size + botOffsetY];
+            const bot_backTL = [centerX + iso + botOffsetX, centerY + halfSize - isoY + botOffsetY];
+            const bot_backTR = [centerX + size + iso + botOffsetX, centerY + halfSize - isoY + botOffsetY];
+            const bot_backBL = [centerX + iso + botOffsetX, centerY + size - isoY + botOffsetY];
+            const bot_backBR = [centerX + size + iso + botOffsetX, centerY + size - isoY + botOffsetY];
 
-            // Draw right half
-            drawFace([right_backTL, right_backTR, right_frontTR, right_frontTL], '#DC143C'); // Top
-            drawFace([right_frontTR, right_backTR, right_backBR, right_frontBR], '#CD5C5C'); // Right
-            drawFace([right_frontTL, right_frontTR, right_frontBR, right_frontBL], '#FF6347'); // Front
-            drawFace([right_frontTL, right_backTL, right_backBL, right_frontBL], '#8B0000'); // Cut surface (dark)
+            // Draw bottom half
+            drawFace([bot_backTL, bot_backTR, bot_frontTR, bot_frontTL], '#8B0000'); // Top cut surface (dark)
+            drawFace([bot_frontTR, bot_backTR, bot_backBR, bot_frontBR], '#CD5C5C'); // Right
+            drawFace([bot_frontTL, bot_frontTR, bot_frontBR, bot_frontBL], '#FF6347'); // Front
         }
 
         function animate() {
@@ -215,7 +215,7 @@
             if (progress < 0.05) {
                 drawCube(centerX, centerY, size);
             } else {
-                drawHorizontalSplit(centerX, centerY, size, progress * 80);
+                drawVerticalSplit(centerX, centerY, size, progress * 80);
             }
 
             requestAnimationFrame(animate);
