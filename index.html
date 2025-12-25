@@ -60,8 +60,10 @@
         let progress = 0;
         let targetProgress = 0;
 
-        const red = new Isomer.Color(220, 50, 50);
-        const darkRed = new Isomer.Color(100, 20, 20);
+        // Define colors for each face with strong contrast
+        const topColor = new Isomer.Color(255, 100, 100);     // Lightest - top face
+        const leftColor = new Isomer.Color(200, 40, 40);       // Medium - left face
+        const rightColor = new Isomer.Color(150, 30, 30);      // Darkest - right face
 
         function animate() {
             progress += (targetProgress - progress) * 0.12;
@@ -73,13 +75,18 @@
             const splitDist = progress * 0.8;
 
             if (progress < 0.05) {
-                // Draw whole cube centered at origin
-                iso.add(new Isomer.Shape.Prism(new Isomer.Point(-1, -1, 0), 2, 2, 2), red);
+                // Draw whole cube with defined face colors
+                const Shape = Isomer.Shape;
+                const Point = Isomer.Point;
+
+                iso.add(Shape.Prism(Point(-1, -1, 0), 2, 2, 2), topColor);
             } else {
-                // Draw front half (left)
-                iso.add(new Isomer.Shape.Prism(new Isomer.Point(-1 - splitDist, -1, 0), 1, 2, 2), red);
-                // Draw back half (right)
-                iso.add(new Isomer.Shape.Prism(new Isomer.Point(splitDist, -1, 0), 1, 2, 2), red);
+                // Draw halves with defined colors
+                const Shape = Isomer.Shape;
+                const Point = Isomer.Point;
+
+                iso.add(Shape.Prism(Point(-1 - splitDist, -1, 0), 1, 2, 2), topColor);
+                iso.add(Shape.Prism(Point(splitDist, -1, 0), 1, 2, 2), topColor);
             }
 
             requestAnimationFrame(animate);
