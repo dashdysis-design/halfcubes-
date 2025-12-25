@@ -65,6 +65,10 @@
         const leftColor = new Isomer.Color(86, 0, 0);          // Left face #560000
         const rightColor = new Isomer.Color(150, 3, 0);        // Right face #960300
 
+        // Load sound effects
+        const splitSound = new Audio('moan%231.mp3');
+        const mergeSound = new Audio('moan%232.mp3');
+
         function animate() {
             progress += (targetProgress - progress) * 0.12;
 
@@ -93,7 +97,18 @@
         }
 
         canvas.addEventListener('click', () => {
-            targetProgress = targetProgress === 0 ? 1 : 0;
+            const newTarget = targetProgress === 0 ? 1 : 0;
+
+            // Play appropriate sound
+            if (newTarget === 1) {
+                splitSound.currentTime = 0;
+                splitSound.play().catch(e => console.log('Audio play failed:', e));
+            } else {
+                mergeSound.currentTime = 0;
+                mergeSound.play().catch(e => console.log('Audio play failed:', e));
+            }
+
+            targetProgress = newTarget;
         });
 
         animate();
