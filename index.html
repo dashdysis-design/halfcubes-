@@ -159,45 +159,48 @@
             }
         }
 
-        // Diagonal X-cut split
-        function drawDiagonalXCut(centerX, centerY, size, splitAmount) {
+        // Horizontal split
+        function drawHorizontalSplit(centerX, centerY, size, splitAmount) {
             const iso = size * Math.cos(Math.PI / 6);
             const isoY = size * Math.sin(Math.PI / 6);
-            const offset = splitAmount * 0.8;
+            const halfSize = size / 2;
 
-            // Top-left wedge (moves up-left)
-            const ox1 = -offset;
-            const oy1 = -offset * 0.5;
+            // Left half (moves left)
+            const leftOffset = -splitAmount;
+            const lx = centerX + leftOffset;
 
-            const tl_frontTL = [centerX + ox1, centerY + oy1];
-            const tl_frontTR = [centerX + size + ox1, centerY + oy1];
-            const tl_frontCenter = [centerX + size/2 + ox1, centerY + size/2 + oy1];
-            const tl_backTL = [centerX + iso + ox1, centerY - isoY + oy1];
-            const tl_backTR = [centerX + size + iso + ox1, centerY - isoY + oy1];
-            const tl_backCenter = [centerX + size/2 + iso + ox1, centerY + size/2 - isoY + oy1];
+            const left_frontTL = [lx, centerY];
+            const left_frontBL = [lx, centerY + size];
+            const left_frontTR = [lx + halfSize, centerY];
+            const left_frontBR = [lx + halfSize, centerY + size];
+            const left_backTL = [lx + iso, centerY - isoY];
+            const left_backBL = [lx + iso, centerY + size - isoY];
+            const left_backTR = [lx + halfSize + iso, centerY - isoY];
+            const left_backBR = [lx + halfSize + iso, centerY + size - isoY];
 
-            // Draw top-left wedge faces
-            drawFace([tl_backTL, tl_backTR, tl_frontTR, tl_frontTL], '#DC143C'); // Top
-            drawFace([tl_frontTR, tl_backTR, tl_backCenter, tl_frontCenter], '#CD5C5C'); // Right
-            drawFace([tl_frontTL, tl_frontTR, tl_frontCenter], '#FF6347'); // Front
-            drawFace([tl_frontTL, tl_frontCenter, tl_backCenter, tl_backTL], '#8B0000'); // Interior cut (dark shadow)
+            // Draw left half
+            drawFace([left_backTL, left_backTR, left_frontTR, left_frontTL], '#DC143C'); // Top
+            drawFace([left_frontTL, left_frontTR, left_frontBR, left_frontBL], '#FF6347'); // Front
+            drawFace([left_frontTR, left_backTR, left_backBR, left_frontBR], '#8B0000'); // Cut surface (dark)
 
-            // Bottom-right wedge (moves down-right)
-            const ox2 = offset;
-            const oy2 = offset * 0.5;
+            // Right half (moves right)
+            const rightOffset = splitAmount;
+            const rx = centerX + halfSize + rightOffset;
 
-            const br_frontBL = [centerX + ox2, centerY + size + oy2];
-            const br_frontBR = [centerX + size + ox2, centerY + size + oy2];
-            const br_frontCenter = [centerX + size/2 + ox2, centerY + size/2 + oy2];
-            const br_backBL = [centerX + iso + ox2, centerY + size - isoY + oy2];
-            const br_backBR = [centerX + size + iso + ox2, centerY + size - isoY + oy2];
-            const br_backCenter = [centerX + size/2 + iso + ox2, centerY + size/2 - isoY + oy2];
+            const right_frontTL = [rx, centerY];
+            const right_frontBL = [rx, centerY + size];
+            const right_frontTR = [rx + halfSize, centerY];
+            const right_frontBR = [rx + halfSize, centerY + size];
+            const right_backTL = [rx + iso, centerY - isoY];
+            const right_backBL = [rx + iso, centerY + size - isoY];
+            const right_backTR = [rx + halfSize + iso, centerY - isoY];
+            const right_backBR = [rx + halfSize + iso, centerY + size - isoY];
 
-            // Draw bottom-right wedge faces
-            drawFace([br_frontCenter, br_backCenter, br_backBR, br_frontBR], '#CD5C5C'); // Right
-            drawFace([br_frontBL, br_frontBR, br_frontCenter], '#FF6347'); // Front
-            drawFace([br_frontBL, br_frontCenter, br_backCenter, br_backBL], '#B22222'); // Left side
-            drawFace([br_frontCenter, br_backCenter, br_backBL, br_frontBL], '#8B0000'); // Interior cut (dark shadow)
+            // Draw right half
+            drawFace([right_backTL, right_backTR, right_frontTR, right_frontTL], '#DC143C'); // Top
+            drawFace([right_frontTR, right_backTR, right_backBR, right_frontBR], '#CD5C5C'); // Right
+            drawFace([right_frontTL, right_frontTR, right_frontBR, right_frontBL], '#FF6347'); // Front
+            drawFace([right_frontTL, right_backTL, right_backBL, right_frontBL], '#8B0000'); // Cut surface (dark)
         }
 
         function animate() {
@@ -212,7 +215,7 @@
             if (progress < 0.05) {
                 drawCube(centerX, centerY, size);
             } else {
-                drawDiagonalXCut(centerX, centerY, size, progress * 80);
+                drawHorizontalSplit(centerX, centerY, size, progress * 80);
             }
 
             requestAnimationFrame(animate);
