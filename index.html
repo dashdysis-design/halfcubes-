@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Halfcubes</title>
     <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -99,217 +100,271 @@
     </div>
 
     <script>
-        // Three.js setup
+        // ===== SCENE SETUP =====
         const canvas = document.getElementById('canvas');
         const scene = new THREE.Scene();
-        const camera = new THREE.OrthographicCamera(-3, 3, 2, -2, 0.1, 1000);
+
+        // Isometric orthographic camera
+        const camera = new THREE.OrthographicCamera(-2.5, 2.5, 1.5, -1.5, 0.1, 1000);
+        camera.position.set(10, 10, 10);
+        camera.lookAt(0, 0, 0);
+
         const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
         renderer.setSize(800, 500);
         renderer.setClearColor(0xfafaf8, 1);
 
-        // Camera position for isometric view
-        camera.position.set(5, 3, 5);
-        camera.lookAt(0, 0, 0);
+        // ===== LIGHTING =====
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+        directionalLight.position.set(5, 10, 7);
+        scene.add(directionalLight);
 
-        let progress = 0;
-        let targetProgress = 0;
-        let currentAnimation = 'split';
-        let cube1, cube2;
-
-        // Colors
-        const materials = [
-            new THREE.MeshBasicMaterial({ color: 0x960300 }), // right - darkest
-            new THREE.MeshBasicMaterial({ color: 0x560000 }), // left - dark
-            new THREE.MeshBasicMaterial({ color: 0xaf0400 }), // top - bright
-            new THREE.MeshBasicMaterial({ color: 0x960300 }), // bottom
-            new THREE.MeshBasicMaterial({ color: 0xaf0400 }), // front
-            new THREE.MeshBasicMaterial({ color: 0x560000 })  // back
+        // ===== MATERIALS =====
+        const faceMaterials = [
+            new THREE.MeshStandardMaterial({ color: 0x960300}), // right +X
+            new THREE.MeshStandardMaterial({ color: 0x560000 }), // left -X
+            new THREE.MeshStandardMaterial({ color: 0xaf0400 }), // top +Y
+            new THREE.MeshStandardMaterial({ color: 0x960300 }), // bottom -Y
+            new THREE.MeshStandardMaterial({ color: 0xaf0400 }), // front +Z
+            new THREE.MeshStandardMaterial({ color: 0x560000 })  // back -Z
         ];
 
-        // Load sound effects
+        // ===== SOUND EFFECTS =====
         const splitSound = new Audio('moan%231.mp3');
         const mergeSound = new Audio('moan%232.mp3');
         splitSound.volume = 0.5;
         mergeSound.volume = 0.5;
 
-        function createCube() {
-            const geometry = new THREE.BoxGeometry(1, 1, 1);
-            return new THREE.Mesh(geometry, materials);
+        // ===== CURRENT SPLIT & PIECES =====
+        let currentSplit = null;
+        let currentAnimation = 'split';
+        let leftPiece, rightPiece;
+
+        // ===== HELPER: Add edges to mesh =====
+        function addEdges(mesh) {
+            const edges = new THREE.EdgesGeometry(mesh.geometry);
+            const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 2 }));
+            mesh.add(line);
         }
 
-        // Create custom wedge geometry for diagonal cut
-        function createWedge(isLeft) {
-            const geometry = new THREE.BufferGeometry();
-            const vertices = new Float32Array(isLeft ? [
-                // Left wedge - triangular prism
-                -0.5, -0.5, -0.5,  // 0: bottom left back
-                 0.5, -0.5, -0.5,  // 1: bottom right back
-                -0.5,  0.5, -0.5,  // 2: top left back
-                -0.5, -0.5,  0.5,  // 3: bottom left front
-                 0.5, -0.5,  0.5,  // 4: bottom right front
-                -0.5,  0.5,  0.5,  // 5: top left front
-            ] : [
-                // Right wedge - triangular prism
-                -0.5, -0.5, -0.5,  // 0: bottom left back
-                 0.5, -0.5, -0.5,  // 1: bottom right back
-                 0.5,  0.5, -0.5,  // 2: top right back
-                -0.5, -0.5,  0.5,  // 3: bottom left front
-                 0.5, -0.5,  0.5,  // 4: bottom right front
-                 0.5,  0.5,  0.5,  // 5: top right front
-            ]);
+        // ===== SPLIT #1: VERTICAL SPLIT =====
+        // Two halves: left (x=-0.25) and right (x=+0.25)
+        // When together at origin, they form a 1x1x1 cube
+        function createSplit1() {
+            // Left piece: 0.5 wide, positioned at x=-0.25 so right edge at x=0
+            const leftGeo = new THREE.BoxGeometry(0.5, 1, 1);
+            leftPiece = new THREE.Mesh(leftGeo, faceMaterials);
+            leftPiece.position.set(-0.25, 0, 0);
+            addEdges(leftPiece);
 
-            const indices = isLeft ? [
-                0,1,2, 1,4,2, 2,4,5, 0,2,5, 0,5,3, 0,3,1, 1,3,4, 3,5,4
-            ] : [
-                0,1,2, 0,4,1, 2,4,5, 0,2,5, 0,5,3, 0,3,1, 1,4,2, 3,5,4
-            ];
+            // Right piece: 0.5 wide, positioned at x=+0.25 so left edge at x=0
+            const rightGeo = new THREE.BoxGeometry(0.5, 1, 1);
+            rightPiece = new THREE.Mesh(rightGeo, faceMaterials);
+            rightPiece.position.set(0.25, 0, 0);
+            addEdges(rightPiece);
 
-            geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
-            geometry.setIndex(indices);
-            geometry.computeVertexNormals();
+            scene.add(leftPiece, rightPiece);
 
-            return new THREE.Mesh(geometry, materials);
+            // GSAP timeline for split animation
+            const tl = gsap.timeline({ paused: true });
+            tl.to(leftPiece.position, { x: -1.25, duration: 1, ease: "power2.inOut" }, 0);
+            tl.to(rightPiece.position, { x: 1.25, duration: 1, ease: "power2.inOut" }, 0);
+
+            return tl;
         }
 
-        // Create curved piece geometry
-        function createCurvedPiece(isLeft, curvature = 0) {
-            const geometry = new THREE.BoxGeometry(0.5, 1, 1, 4, 1, 1);
-            const positions = geometry.attributes.position;
+        // ===== SPLIT #2: HORIZONTAL SLICE =====
+        function createSplit2() {
+            const bottomGeo = new THREE.BoxGeometry(1, 0.5, 1);
+            leftPiece = new THREE.Mesh(bottomGeo, faceMaterials);
+            leftPiece.position.set(0, -0.25, 0);
+            addEdges(leftPiece);
 
-            // Apply curve deformation
-            for (let i = 0; i < positions.count; i++) {
-                const y = positions.getY(i);
-                const offset = Math.sin(y * Math.PI) * curvature;
-                positions.setX(i, positions.getX(i) + offset * (isLeft ? -1 : 1));
-            }
+            const topGeo = new THREE.BoxGeometry(1, 0.5, 1);
+            rightPiece = new THREE.Mesh(topGeo, faceMaterials);
+            rightPiece.position.set(0, 0.25, 0);
+            addEdges(rightPiece);
 
-            geometry.computeVertexNormals();
-            return new THREE.Mesh(geometry, materials);
+            scene.add(leftPiece, rightPiece);
+
+            const tl = gsap.timeline({ paused: true });
+            tl.to(leftPiece.position, { y: -1.25, duration: 1, ease: "power2.inOut" }, 0);
+            tl.to(rightPiece.position, { y: 1.25, duration: 1, ease: "power2.inOut" }, 0);
+
+            return tl;
         }
 
+        // ===== SPLIT #3: COLLAPSE =====
+        function createSplit3() {
+            const leftGeo = new THREE.BoxGeometry(0.5, 1, 1);
+            leftPiece = new THREE.Mesh(leftGeo, faceMaterials);
+            leftPiece.position.set(-0.25, 0, 0);
+            addEdges(leftPiece);
+
+            const rightGeo = new THREE.BoxGeometry(0.5, 1, 1);
+            rightPiece = new THREE.Mesh(rightGeo, faceMaterials);
+            rightPiece.position.set(0.25, 0, 0);
+            addEdges(rightPiece);
+
+            scene.add(leftPiece, rightPiece);
+
+            const tl = gsap.timeline({ paused: true });
+            tl.to(leftPiece.position, { x: -0.7, y: -0.2, rotation: { z: 0.3 }, duration: 1, ease: "power2.inOut" }, 0);
+            tl.to(rightPiece.position, { x: 0.7, y: 0.2, rotation: { z: -0.3 }, duration: 1, ease: "power2.inOut" }, 0);
+
+            return tl;
+        }
+
+        // ===== SPLIT #4: BOOK FOLD =====
+        function createSplit4() {
+            const leftGeo = new THREE.BoxGeometry(0.5, 1, 1);
+            leftPiece = new THREE.Mesh(leftGeo, faceMaterials);
+            leftPiece.position.set(-0.25, 0, 0);
+            addEdges(leftPiece);
+
+            const rightGeo = new THREE.BoxGeometry(0.5, 1, 1);
+            rightPiece = new THREE.Mesh(rightGeo, faceMaterials);
+            rightPiece.position.set(0.25, 0, 0);
+            addEdges(rightPiece);
+
+            scene.add(leftPiece, rightPiece);
+
+            const tl = gsap.timeline({ paused: true });
+            tl.to(leftPiece.rotation, { y: -Math.PI / 3, duration: 1, ease: "power2.inOut" }, 0);
+            tl.to(leftPiece.position, { x: -0.5, duration: 1, ease: "power2.inOut" }, 0);
+            tl.to(rightPiece.rotation, { y: Math.PI / 3, duration: 1, ease: "power2.inOut" }, 0);
+            tl.to(rightPiece.position, { x: 0.5, duration: 1, ease: "power2.inOut" }, 0);
+
+            return tl;
+        }
+
+        // ===== SPLIT #5: CURVE =====
+        function createSplit5() {
+            const leftGeo = new THREE.BoxGeometry(0.5, 1, 1, 1, 8, 1);
+            leftPiece = new THREE.Mesh(leftGeo, faceMaterials);
+            leftPiece.position.set(-0.25, 0, 0);
+            addEdges(leftPiece);
+
+            const rightGeo = new THREE.BoxGeometry(0.5, 1, 1, 1, 8, 1);
+            rightPiece = new THREE.Mesh(rightGeo, faceMaterials);
+            rightPiece.position.set(0.25, 0, 0);
+            addEdges(rightPiece);
+
+            scene.add(leftPiece, rightPiece);
+
+            const tl = gsap.timeline({ paused: true });
+            tl.to(leftPiece.position, { x: -1, y: 0.2, duration: 1, ease: "power2.inOut" }, 0);
+            tl.to(rightPiece.position, { x: 1, y: -0.2, duration: 1, ease: "power2.inOut" }, 0);
+
+            return tl;
+        }
+
+        // ===== SPLIT #6: DIAGONAL =====
+        function createSplit6() {
+            const shape = new THREE.Shape();
+            shape.moveTo(-0.5, -0.5);
+            shape.lineTo(0.5, -0.5);
+            shape.lineTo(-0.5, 0.5);
+            shape.lineTo(-0.5, -0.5);
+
+            const leftGeo = new THREE.ExtrudeGeometry(shape, { depth: 1, bevelEnabled: false });
+            leftGeo.translate(0, 0, -0.5);
+            leftPiece = new THREE.Mesh(leftGeo, faceMaterials[0]);
+            addEdges(leftPiece);
+
+            const shape2 = new THREE.Shape();
+            shape2.moveTo(-0.5, 0.5);
+            shape2.lineTo(0.5, 0.5);
+            shape2.lineTo(0.5, -0.5);
+            shape2.lineTo(-0.5, 0.5);
+
+            const rightGeo = new THREE.ExtrudeGeometry(shape2, { depth: 1, bevelEnabled: false });
+            rightGeo.translate(0, 0, -0.5);
+            rightPiece = new THREE.Mesh(rightGeo, faceMaterials[0]);
+            addEdges(rightPiece);
+
+            scene.add(leftPiece, rightPiece);
+
+            const tl = gsap.timeline({ paused: true });
+            tl.to(leftPiece.position, { x: -0.7, y: -0.7, duration: 1, ease: "power2.inOut" }, 0);
+            tl.to(rightPiece.position, { x: 0.7, y: 0.7, duration: 1, ease: "power2.inOut" }, 0);
+
+            return tl;
+        }
+
+        // ===== SPLIT #7: PEEL =====
+        function createSplit7() {
+            const leftGeo = new THREE.BoxGeometry(0.75, 1, 1);
+            leftPiece = new THREE.Mesh(leftGeo, faceMaterials);
+            leftPiece.position.set(-0.125, 0, 0);
+            addEdges(leftPiece);
+
+            const rightGeo = new THREE.BoxGeometry(0.25, 1, 1);
+            rightPiece = new THREE.Mesh(rightGeo, faceMaterials);
+            rightPiece.position.set(0.375, 0, 0);
+            addEdges(rightPiece);
+
+            scene.add(leftPiece, rightPiece);
+
+            const tl = gsap.timeline({ paused: true });
+            tl.to(rightPiece.position, { x: 1.2, y: 0.8, z: 0.5, duration: 1, ease: "power2.inOut" }, 0);
+            tl.to(rightPiece.rotation, { y: Math.PI / 4, z: -Math.PI / 6, duration: 1, ease: "power2.inOut" }, 0);
+
+            return tl;
+        }
+
+        // ===== ANIMATION MANAGER =====
         function setAnimation(animType) {
             currentAnimation = animType;
-            targetProgress = 0;
-            progress = 0;
+
+            // Clear scene
+            if (leftPiece) scene.remove(leftPiece);
+            if (rightPiece) scene.remove(rightPiece);
+            if (currentSplit) currentSplit.kill();
+
+            // Create new split
+            switch(animType) {
+                case 'split': currentSplit = createSplit1(); break;
+                case 'slice': currentSplit = createSplit2(); break;
+                case 'collapse': currentSplit = createSplit3(); break;
+                case 'fold': currentSplit = createSplit4(); break;
+                case 'curve': currentSplit = createSplit5(); break;
+                case 'diagonal': currentSplit = createSplit6(); break;
+                case 'peel': currentSplit = createSplit7(); break;
+            }
 
             // Update button states
             document.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
         }
 
+        // ===== RENDER LOOP =====
         function animate() {
-            progress += (targetProgress - progress) * 0.12;
-
-            // Clear scene
-            while(scene.children.length > 0) {
-                scene.remove(scene.children[0]);
-            }
-
-            const p = progress;
-            const dist = p * 1.5;
-
-            if (p < 0.05) {
-                // Draw whole cube
-                const cube = createCube();
-                scene.add(cube);
-            } else {
-                // Draw animation based on current type
-                switch(currentAnimation) {
-                    case 'split':
-                        // Animation 1: Vertical split
-                        cube1 = createCube();
-                        cube2 = createCube();
-                        cube1.scale.x = 0.5;
-                        cube2.scale.x = 0.5;
-                        cube1.position.x = -0.25 - dist * 0.5;
-                        cube2.position.x = 0.25 + dist * 0.5;
-                        scene.add(cube1, cube2);
-                        break;
-
-                    case 'slice':
-                        // Animation 2: Horizontal slice (Y-axis)
-                        cube1 = createCube();
-                        cube2 = createCube();
-                        cube1.scale.y = 0.5;
-                        cube2.scale.y = 0.5;
-                        cube1.position.y = -0.25 - dist * 0.5;
-                        cube2.position.y = 0.25 + dist * 0.5;
-                        scene.add(cube1, cube2);
-                        break;
-
-                    case 'collapse':
-                        // Animation 3: Collapse inward
-                        cube1 = createCube();
-                        const scale = 1 - p * 0.4;
-                        cube1.scale.set(scale, scale, scale);
-                        scene.add(cube1);
-                        break;
-
-                    case 'fold':
-                        // Animation 4: Top folds down
-                        cube1 = createCube();
-                        cube2 = createCube();
-                        cube1.scale.z = 0.5;
-                        cube2.scale.z = 0.5;
-                        cube1.position.z = -0.25;
-                        cube2.position.z = 0.25;
-                        cube2.rotation.x = p * Math.PI / 2;
-                        cube2.position.y = -p * 0.5;
-                        scene.add(cube1, cube2);
-                        break;
-
-                    case 'curve':
-                        // Animation 5: Curved cut with actual curved geometry
-                        cube1 = createCurvedPiece(true, p * 0.3);
-                        cube2 = createCurvedPiece(false, p * 0.3);
-                        cube1.position.set(-0.25 - dist * 0.4, 0, 0);
-                        cube2.position.set(0.25 + dist * 0.4, 0, 0);
-                        scene.add(cube1, cube2);
-                        break;
-
-                    case 'diagonal':
-                        // Animation 6: Diagonal slice with wedge geometry
-                        cube1 = createWedge(true);
-                        cube2 = createWedge(false);
-                        cube1.position.set(-dist * 0.5, 0, 0);
-                        cube2.position.set(dist * 0.5, 0, 0);
-                        scene.add(cube1, cube2);
-                        break;
-
-                    case 'peel':
-                        // Animation 7: Corner peel
-                        cube1 = createCube();
-                        cube2 = createCube();
-                        cube1.scale.x = 0.75;
-                        cube2.scale.x = 0.25;
-                        cube1.position.x = -0.125;
-                        cube2.position.set(0.375 + dist * 0.5, p * 0.5, p * 0.5);
-                        cube2.rotation.y = p * Math.PI / 3;
-                        cube2.rotation.z = -p * Math.PI / 6;
-                        scene.add(cube1, cube2);
-                        break;
-                }
-            }
-
             renderer.render(scene, camera);
             requestAnimationFrame(animate);
         }
 
+        // ===== CLICK HANDLER =====
         canvas.addEventListener('click', () => {
-            const newTarget = targetProgress === 0 ? 1 : 0;
+            if (!currentSplit) return;
 
-            // Play appropriate sound
-            if (newTarget === 1) {
+            const isForward = currentSplit.progress() < 0.5;
+
+            // Play sound
+            if (isForward) {
                 splitSound.currentTime = 0;
                 splitSound.play().catch(e => console.log('Audio play failed:', e));
+                currentSplit.play();
             } else {
                 mergeSound.currentTime = 0;
                 mergeSound.play().catch(e => console.log('Audio play failed:', e));
+                currentSplit.reverse();
             }
-
-            targetProgress = newTarget;
         });
 
+        // ===== INIT =====
+        currentSplit = createSplit1();
         animate();
     </script>
 </body>
