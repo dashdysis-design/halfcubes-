@@ -24,80 +24,14 @@
             padding: 20px;
         }
 
-        .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 30px;
-            max-width: 1200px;
-            width: 100%;
-        }
-
         canvas {
             cursor: pointer;
             display: block;
         }
-
-        .buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            justify-content: center;
-            max-width: 600px;
-        }
-
-        button {
-            padding: 12px 20px;
-            background: white;
-            border: 2px solid #2a2a2a;
-            border-radius: 6px;
-            cursor: pointer;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            font-weight: bold;
-            transition: all 0.2s ease;
-        }
-
-        button:hover {
-            background: #f0f0f0;
-            transform: translateY(-2px);
-        }
-
-        button.active {
-            background: #2a2a2a;
-            color: white;
-        }
-
-        @media (max-width: 600px) {
-            canvas {
-                width: 100%;
-                height: auto;
-            }
-
-            .buttons {
-                gap: 8px;
-            }
-
-            button {
-                padding: 10px 16px;
-                font-size: 12px;
-            }
-        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <canvas id="canvas" width="800" height="500"></canvas>
-        <div class="buttons">
-            <button onclick="setAnimation('split')" class="active">1. Split</button>
-            <button onclick="setAnimation('slice')">2. Slice</button>
-            <button onclick="setAnimation('collapse')">3. Collapse</button>
-            <button onclick="setAnimation('fold')">4. Fold</button>
-            <button onclick="setAnimation('curve')">5. Curve</button>
-            <button onclick="setAnimation('diagonal')">6. Diagonal</button>
-            <button onclick="setAnimation('peel')">7. Peel</button>
-        </div>
-    </div>
+    <canvas id="canvas" width="800" height="500"></canvas>
 
     <script>
         // ===== SCENE SETUP =====
@@ -138,7 +72,6 @@
 
         // ===== CURRENT SPLIT & PIECES =====
         let currentSplit = null;
-        let currentAnimation = 'split';
         let leftPiece, rightPiece;
 
         // ===== HELPER: Add edges to mesh =====
@@ -174,170 +107,6 @@
             return tl;
         }
 
-        // ===== SPLIT #2: HORIZONTAL SLICE =====
-        function createSplit2() {
-            const bottomGeo = new THREE.BoxGeometry(1, 0.5, 1);
-            leftPiece = new THREE.Mesh(bottomGeo, faceMaterials);
-            leftPiece.position.set(0, -0.25, 0);
-            addEdges(leftPiece);
-
-            const topGeo = new THREE.BoxGeometry(1, 0.5, 1);
-            rightPiece = new THREE.Mesh(topGeo, faceMaterials);
-            rightPiece.position.set(0, 0.25, 0);
-            addEdges(rightPiece);
-
-            scene.add(leftPiece, rightPiece);
-
-            const tl = gsap.timeline({ paused: true });
-            tl.to(leftPiece.position, { y: -1.25, duration: 1, ease: "power2.inOut" }, 0);
-            tl.to(rightPiece.position, { y: 1.25, duration: 1, ease: "power2.inOut" }, 0);
-
-            return tl;
-        }
-
-        // ===== SPLIT #3: COLLAPSE =====
-        function createSplit3() {
-            const leftGeo = new THREE.BoxGeometry(0.5, 1, 1);
-            leftPiece = new THREE.Mesh(leftGeo, faceMaterials);
-            leftPiece.position.set(-0.25, 0, 0);
-            addEdges(leftPiece);
-
-            const rightGeo = new THREE.BoxGeometry(0.5, 1, 1);
-            rightPiece = new THREE.Mesh(rightGeo, faceMaterials);
-            rightPiece.position.set(0.25, 0, 0);
-            addEdges(rightPiece);
-
-            scene.add(leftPiece, rightPiece);
-
-            const tl = gsap.timeline({ paused: true });
-            tl.to(leftPiece.position, { x: -0.7, y: -0.2, rotation: { z: 0.3 }, duration: 1, ease: "power2.inOut" }, 0);
-            tl.to(rightPiece.position, { x: 0.7, y: 0.2, rotation: { z: -0.3 }, duration: 1, ease: "power2.inOut" }, 0);
-
-            return tl;
-        }
-
-        // ===== SPLIT #4: BOOK FOLD =====
-        function createSplit4() {
-            const leftGeo = new THREE.BoxGeometry(0.5, 1, 1);
-            leftPiece = new THREE.Mesh(leftGeo, faceMaterials);
-            leftPiece.position.set(-0.25, 0, 0);
-            addEdges(leftPiece);
-
-            const rightGeo = new THREE.BoxGeometry(0.5, 1, 1);
-            rightPiece = new THREE.Mesh(rightGeo, faceMaterials);
-            rightPiece.position.set(0.25, 0, 0);
-            addEdges(rightPiece);
-
-            scene.add(leftPiece, rightPiece);
-
-            const tl = gsap.timeline({ paused: true });
-            tl.to(leftPiece.rotation, { y: -Math.PI / 3, duration: 1, ease: "power2.inOut" }, 0);
-            tl.to(leftPiece.position, { x: -0.5, duration: 1, ease: "power2.inOut" }, 0);
-            tl.to(rightPiece.rotation, { y: Math.PI / 3, duration: 1, ease: "power2.inOut" }, 0);
-            tl.to(rightPiece.position, { x: 0.5, duration: 1, ease: "power2.inOut" }, 0);
-
-            return tl;
-        }
-
-        // ===== SPLIT #5: CURVE =====
-        function createSplit5() {
-            const leftGeo = new THREE.BoxGeometry(0.5, 1, 1, 1, 8, 1);
-            leftPiece = new THREE.Mesh(leftGeo, faceMaterials);
-            leftPiece.position.set(-0.25, 0, 0);
-            addEdges(leftPiece);
-
-            const rightGeo = new THREE.BoxGeometry(0.5, 1, 1, 1, 8, 1);
-            rightPiece = new THREE.Mesh(rightGeo, faceMaterials);
-            rightPiece.position.set(0.25, 0, 0);
-            addEdges(rightPiece);
-
-            scene.add(leftPiece, rightPiece);
-
-            const tl = gsap.timeline({ paused: true });
-            tl.to(leftPiece.position, { x: -1, y: 0.2, duration: 1, ease: "power2.inOut" }, 0);
-            tl.to(rightPiece.position, { x: 1, y: -0.2, duration: 1, ease: "power2.inOut" }, 0);
-
-            return tl;
-        }
-
-        // ===== SPLIT #6: DIAGONAL =====
-        function createSplit6() {
-            const shape = new THREE.Shape();
-            shape.moveTo(-0.5, -0.5);
-            shape.lineTo(0.5, -0.5);
-            shape.lineTo(-0.5, 0.5);
-            shape.lineTo(-0.5, -0.5);
-
-            const leftGeo = new THREE.ExtrudeGeometry(shape, { depth: 1, bevelEnabled: false });
-            leftGeo.translate(0, 0, -0.5);
-            leftPiece = new THREE.Mesh(leftGeo, faceMaterials[0]);
-            addEdges(leftPiece);
-
-            const shape2 = new THREE.Shape();
-            shape2.moveTo(-0.5, 0.5);
-            shape2.lineTo(0.5, 0.5);
-            shape2.lineTo(0.5, -0.5);
-            shape2.lineTo(-0.5, 0.5);
-
-            const rightGeo = new THREE.ExtrudeGeometry(shape2, { depth: 1, bevelEnabled: false });
-            rightGeo.translate(0, 0, -0.5);
-            rightPiece = new THREE.Mesh(rightGeo, faceMaterials[0]);
-            addEdges(rightPiece);
-
-            scene.add(leftPiece, rightPiece);
-
-            const tl = gsap.timeline({ paused: true });
-            tl.to(leftPiece.position, { x: -0.7, y: -0.7, duration: 1, ease: "power2.inOut" }, 0);
-            tl.to(rightPiece.position, { x: 0.7, y: 0.7, duration: 1, ease: "power2.inOut" }, 0);
-
-            return tl;
-        }
-
-        // ===== SPLIT #7: PEEL =====
-        function createSplit7() {
-            const leftGeo = new THREE.BoxGeometry(0.75, 1, 1);
-            leftPiece = new THREE.Mesh(leftGeo, faceMaterials);
-            leftPiece.position.set(-0.125, 0, 0);
-            addEdges(leftPiece);
-
-            const rightGeo = new THREE.BoxGeometry(0.25, 1, 1);
-            rightPiece = new THREE.Mesh(rightGeo, faceMaterials);
-            rightPiece.position.set(0.375, 0, 0);
-            addEdges(rightPiece);
-
-            scene.add(leftPiece, rightPiece);
-
-            const tl = gsap.timeline({ paused: true });
-            tl.to(rightPiece.position, { x: 1.2, y: 0.8, z: 0.5, duration: 1, ease: "power2.inOut" }, 0);
-            tl.to(rightPiece.rotation, { y: Math.PI / 4, z: -Math.PI / 6, duration: 1, ease: "power2.inOut" }, 0);
-
-            return tl;
-        }
-
-        // ===== ANIMATION MANAGER =====
-        function setAnimation(animType) {
-            currentAnimation = animType;
-
-            // Clear scene
-            if (leftPiece) scene.remove(leftPiece);
-            if (rightPiece) scene.remove(rightPiece);
-            if (currentSplit) currentSplit.kill();
-
-            // Create new split
-            switch(animType) {
-                case 'split': currentSplit = createSplit1(); break;
-                case 'slice': currentSplit = createSplit2(); break;
-                case 'collapse': currentSplit = createSplit3(); break;
-                case 'fold': currentSplit = createSplit4(); break;
-                case 'curve': currentSplit = createSplit5(); break;
-                case 'diagonal': currentSplit = createSplit6(); break;
-                case 'peel': currentSplit = createSplit7(); break;
-            }
-
-            // Update button states
-            document.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-        }
 
         // ===== RENDER LOOP =====
         function animate() {
