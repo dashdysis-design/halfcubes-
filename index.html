@@ -36,11 +36,49 @@
             cursor: pointer;
         }
 
+        .buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 600px;
+        }
+
+        button {
+            padding: 12px 20px;
+            background: white;
+            border: 2px solid #2a2a2a;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background: #f0f0f0;
+            transform: translateY(-2px);
+        }
+
+        button.active {
+            background: #2a2a2a;
+            color: white;
+        }
 
         @media (max-width: 600px) {
             canvas {
                 width: 100%;
                 height: auto;
+            }
+
+            .buttons {
+                gap: 8px;
+            }
+
+            button {
+                padding: 10px 16px;
+                font-size: 12px;
             }
         }
     </style>
@@ -48,6 +86,15 @@
 <body>
     <div class="container">
         <canvas id="canvas" width="800" height="500"></canvas>
+        <div class="buttons">
+            <button onclick="setAnimation('split')" class="active">1. Split</button>
+            <button onclick="setAnimation('slice')">2. Slice</button>
+            <button onclick="setAnimation('collapse')">3. Collapse</button>
+            <button onclick="setAnimation('fold')">4. Fold</button>
+            <button onclick="setAnimation('curve')">5. Curve</button>
+            <button onclick="setAnimation('diagonal')">6. Diagonal</button>
+            <button onclick="setAnimation('peel')">7. Peel</button>
+        </div>
     </div>
 
     <script>
@@ -59,6 +106,7 @@
 
         let progress = 0;
         let targetProgress = 0;
+        let currentAnimation = 'split';
 
         // Define colors for each face with strong contrast
         const topColor = new Isomer.Color(175, 4, 0);          // Top face #af0400
@@ -69,6 +117,16 @@
         const splitSound = new Audio('moan%231.mp3');
         const mergeSound = new Audio('moan%232.mp3');
 
+        function setAnimation(animType) {
+            currentAnimation = animType;
+            targetProgress = 0;
+            progress = 0;
+
+            // Update button states
+            document.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
         function animate() {
             progress += (targetProgress - progress) * 0.12;
 
@@ -76,21 +134,63 @@
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+            const Shape = Isomer.Shape;
+            const Point = Isomer.Point;
             const splitDist = progress * 0.8;
+            const p = progress;
 
             if (progress < 0.05) {
-                // Draw whole cube with defined face colors
-                const Shape = Isomer.Shape;
-                const Point = Isomer.Point;
-
+                // Draw whole cube
                 iso.add(Shape.Prism(Point(-1, -1, 0), 2, 2, 2), topColor);
             } else {
-                // Draw halves with defined colors
-                const Shape = Isomer.Shape;
-                const Point = Isomer.Point;
+                // Draw animation based on current type
+                switch(currentAnimation) {
+                    case 'split':
+                        // Animation 1: Vertical split
+                        iso.add(Shape.Prism(Point(-1 - splitDist, -1, 0), 1, 2, 2), topColor);
+                        iso.add(Shape.Prism(Point(splitDist, -1, 0), 1, 2, 2), topColor);
+                        break;
 
-                iso.add(Shape.Prism(Point(-1 - splitDist, -1, 0), 1, 2, 2), topColor);
-                iso.add(Shape.Prism(Point(splitDist, -1, 0), 1, 2, 2), topColor);
+                    case 'slice':
+                        // Animation 2: Horizontal slice
+                        iso.add(Shape.Prism(Point(-1, -1 - splitDist, 0), 2, 1, 2), topColor);
+                        iso.add(Shape.Prism(Point(-1, splitDist, 0), 2, 1, 2), topColor);
+                        break;
+
+                    case 'collapse':
+                        // Animation 3: Collapse inward
+                        const collapseScale = 1 - p * 0.3;
+                        const collapseOffset = p * 0.5;
+                        iso.add(Shape.Prism(Point(-1 + collapseOffset, -1 + collapseOffset, 0), 2 * collapseScale, 2 * collapseScale, 2), topColor);
+                        break;
+
+                    case 'fold':
+                        // Animation 4: Top folds down
+                        iso.add(Shape.Prism(Point(-1, -1, 0), 2, 2, 1), topColor);
+                        iso.add(Shape.Prism(Point(-1 - p * 0.5, -1 - p * 0.5, 1), 2, 2, 1), topColor);
+                        break;
+
+                    case 'curve':
+                        // Animation 5: Curved cut (simulate with offset)
+                        iso.add(Shape.Prism(Point(-1 - splitDist * 0.7, -1, 0), 1, 2, 2), topColor);
+                        iso.add(Shape.Prism(Point(splitDist * 0.7, -1, 0), 1, 2, 2), topColor);
+                        break;
+
+                    case 'diagonal':
+                        // Animation 6: Diagonal slice
+                        iso.add(Shape.Prism(Point(-1 - splitDist, -1 - splitDist, 0), 1.5, 1.5, 2), topColor);
+                        iso.add(Shape.Prism(Point(-0.5 + splitDist, -0.5 + splitDist, 0), 1.5, 1.5, 2), topColor);
+                        break;
+
+                    case 'peel':
+                        // Animation 7: Corner peel
+                        iso.add(Shape.Prism(Point(-1, -1, 0), 1.5, 2, 2), topColor);
+                        iso.add(Shape.Prism(Point(0.5 + splitDist, -1, p * 1), 0.5, 2, 2 - p * 1), topColor);
+                        break;
+
+                    default:
+                        iso.add(Shape.Prism(Point(-1, -1, 0), 2, 2, 2), topColor);
+                }
             }
 
             requestAnimationFrame(animate);
