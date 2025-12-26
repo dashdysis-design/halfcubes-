@@ -116,6 +116,8 @@
         // Load sound effects
         const splitSound = new Audio('moan%231.mp3');
         const mergeSound = new Audio('moan%232.mp3');
+        splitSound.volume = 0.5;
+        mergeSound.volume = 0.5;
 
         function setAnimation(animType) {
             currentAnimation = animType;
