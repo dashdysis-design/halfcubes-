@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HalfCubes - Automated Marketing Dashboards</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -59,6 +60,18 @@
             color: #000000;
             line-height: 0.9;
             font-family: Georgia, serif;
+        }
+
+        .cube-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        #cube-canvas {
+            display: block;
         }
 
         /* ===== RIGHT SIDE (Black with content) ===== */
@@ -215,7 +228,9 @@
             <div class="logo">
                 <h1>HalfCubes</h1>
             </div>
-            <!-- Empty space for your interactive cube -->
+            <div class="cube-container" id="cubeContainer">
+                <canvas id="cube-canvas" width="300" height="300"></canvas>
+            </div>
         </div>
 
         <!-- RIGHT SIDE -->
@@ -248,5 +263,136 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Get canvas and context
+        const canvas = document.getElementById('cube-canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Cube dimensions (isometric)
+        const cubeSize = 50;
+        let isSplit = false;
+        let leftOffset = 0;
+        let rightOffset = 0;
+
+        // Hand-drawn style helper - adds slight variations to lines
+        function drawHandDrawnLine(x1, y1, x2, y2) {
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+
+            // Calculate segments for hand-drawn effect
+            const segments = 8;
+            const dx = (x2 - x1) / segments;
+            const dy = (y2 - y1) / segments;
+
+            for (let i = 1; i <= segments; i++) {
+                const wobble = (Math.random() - 0.5) * 0.5; // Slight wobble
+                const x = x1 + dx * i + wobble;
+                const y = y1 + dy * i + wobble;
+                ctx.lineTo(x, y);
+            }
+
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        // Draw isometric cube half
+        function drawCubeHalf(offsetX, isLeft) {
+            const centerX = 150 + offsetX;
+            const centerY = 150;
+
+            // Isometric projection calculations
+            const w = cubeSize / 2;
+            const h = cubeSize;
+
+            if (isLeft) {
+                // Left half vertices
+                const v1 = [centerX - w, centerY];
+                const v2 = [centerX, centerY - w/1.732];
+                const v3 = [centerX, centerY - w/1.732 - h];
+                const v4 = [centerX - w, centerY - h];
+                const v5 = [centerX - w, centerY + w/1.732];
+                const v6 = [centerX, centerY + w/1.732 - h];
+
+                // Draw edges
+                drawHandDrawnLine(v1[0], v1[1], v2[0], v2[1]); // bottom front
+                drawHandDrawnLine(v2[0], v2[1], v3[0], v3[1]); // right vertical
+                drawHandDrawnLine(v3[0], v3[1], v4[0], v4[1]); // top front
+                drawHandDrawnLine(v4[0], v4[1], v1[0], v1[1]); // left vertical
+                drawHandDrawnLine(v1[0], v1[1], v5[0], v5[1]); // left back
+                drawHandDrawnLine(v5[0], v5[1], v4[0], v4[1]); // back vertical
+                drawHandDrawnLine(v3[0], v3[1], v6[0], v6[1]); // top back
+            } else {
+                // Right half vertices
+                const v1 = [centerX, centerY - w/1.732];
+                const v2 = [centerX + w, centerY];
+                const v3 = [centerX + w, centerY - h];
+                const v4 = [centerX, centerY - w/1.732 - h];
+                const v5 = [centerX + w, centerY + w/1.732];
+                const v6 = [centerX, centerY + w/1.732 - h];
+
+                // Draw edges
+                drawHandDrawnLine(v1[0], v1[1], v2[0], v2[1]); // bottom front
+                drawHandDrawnLine(v2[0], v2[1], v3[0], v3[1]); // right vertical
+                drawHandDrawnLine(v3[0], v3[1], v4[0], v4[1]); // top front
+                drawHandDrawnLine(v4[0], v4[1], v1[0], v1[1]); // left vertical
+                drawHandDrawnLine(v2[0], v2[1], v5[0], v5[1]); // right back
+                drawHandDrawnLine(v5[0], v5[1], v3[0], v3[1]); // back vertical
+                drawHandDrawnLine(v4[0], v4[1], v6[0], v6[1]); // top back
+            }
+        }
+
+        // Render the cube
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawCubeHalf(leftOffset, true);
+            drawCubeHalf(rightOffset, false);
+        }
+
+        // Animation function
+        function animateSplit(split) {
+            const timeline = gsap.timeline();
+
+            if (split) {
+                timeline.to({ left: leftOffset, right: rightOffset }, {
+                    left: -30,
+                    right: 30,
+                    duration: 0.8,
+                    ease: "power2.inOut",
+                    onUpdate: function() {
+                        leftOffset = this.targets()[0].left;
+                        rightOffset = this.targets()[0].right;
+                        render();
+                    }
+                });
+            } else {
+                timeline.to({ left: leftOffset, right: rightOffset }, {
+                    left: 0,
+                    right: 0,
+                    duration: 0.8,
+                    ease: "power2.inOut",
+                    onUpdate: function() {
+                        leftOffset = this.targets()[0].left;
+                        rightOffset = this.targets()[0].right;
+                        render();
+                    }
+                });
+            }
+        }
+
+        // Click handler
+        document.getElementById('cubeContainer').addEventListener('click', () => {
+            isSplit = !isSplit;
+            animateSplit(isSplit);
+        });
+
+        // Initial render and auto-split on load
+        render();
+        setTimeout(() => {
+            isSplit = true;
+            animateSplit(true);
+        }, 500);
+    </script>
 </body>
 </html>
