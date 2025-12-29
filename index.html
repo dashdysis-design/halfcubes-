@@ -56,130 +56,10 @@
             height: auto;
         }
 
-        /* ===== CONTENT SECTION ===== */
-        .content {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 60px 20px;
-            text-align: center;
-        }
-
-        .headline {
-            font-size: 40px;
-            font-weight: bold;
-            color: #000000;
-            margin-bottom: 20px;
-            line-height: 1.2;
-        }
-
-        .subheadline {
-            font-size: 20px;
-            color: #666666;
-            margin-bottom: 50px;
-            line-height: 1.5;
-        }
-
-        /* ===== FEATURES ===== */
-        .features {
-            text-align: left;
-            max-width: 500px;
-            margin: 0 auto 50px;
-        }
-
-        .features ul {
-            list-style: none;
-        }
-
-        .features li {
-            font-size: 18px;
-            color: #000000;
-            padding: 12px 0;
-            position: relative;
-            padding-left: 30px;
-        }
-
-        .features li:before {
-            content: "✓";
-            position: absolute;
-            left: 0;
-            color: #E60000;
-            font-weight: bold;
-            font-size: 20px;
-        }
-
-        /* ===== PRICING ===== */
-        .pricing {
-            font-size: 22px;
-            font-weight: bold;
-            color: #000000;
-            margin-bottom: 30px;
-        }
-
-        /* ===== CTA BUTTON ===== */
-        .cta-button {
-            display: inline-block;
-            background: #E60000;
-            color: #FFFFFF;
-            text-decoration: none;
-            font-size: 20px;
-            font-weight: bold;
-            padding: 18px 50px;
-            border-radius: 5px;
-            transition: background 0.3s ease;
-            margin-bottom: 60px;
-        }
-
-        .cta-button:hover {
-            background: #CC0000;
-        }
-
-        /* ===== FOOTER ===== */
-        .footer {
-            background: #000000;
-            color: #FFFFFF;
-            text-align: center;
-            padding: 40px 20px;
-        }
-
-        .footer p {
-            font-size: 16px;
-            line-height: 1.8;
-        }
-
-        .footer a {
-            color: #FFFFFF;
-            text-decoration: none;
-        }
-
-        .footer a:hover {
-            text-decoration: underline;
-        }
-
         /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
             .logo h1 {
                 font-size: 36px;
-            }
-
-            .headline {
-                font-size: 28px;
-            }
-
-            .subheadline {
-                font-size: 18px;
-            }
-
-            .features li {
-                font-size: 16px;
-            }
-
-            .pricing {
-                font-size: 20px;
-            }
-
-            .cta-button {
-                font-size: 18px;
-                padding: 15px 40px;
             }
 
             canvas {
@@ -204,28 +84,39 @@
     </div>
 
     <!-- Content Section -->
-    <div class="content">
-        <h2 class="headline">Automated Marketing Dashboards for B2B Companies</h2>
+    <div style="max-width: 800px; margin: 60px auto; padding: 40px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
 
-        <p class="subheadline">Real-time reporting from Meta Ads, Google Analytics, and your CRM. Save 5-10 hours/week on manual data pulling.</p>
+        <h1 style="font-size: 48px; font-weight: 700; margin-bottom: 20px; letter-spacing: -1px;">
+            Automated Marketing Dashboards<br>for B2B Companies
+        </h1>
 
-        <div class="features">
-            <ul>
-                <li>Connect your ad platforms in minutes</li>
-                <li>Real-time dashboard updates automatically</li>
-                <li>Weekly reports delivered to leadership</li>
-            </ul>
+        <p style="font-size: 20px; color: #666; margin-bottom: 50px; line-height: 1.6;">
+            Real-time reporting from Meta Ads, Google Analytics, and your CRM.<br>
+            Save 5-10 hours/week on manual data pulling.
+        </p>
+
+        <div style="font-size: 18px; margin: 40px 0; color: #333;">
+            Connect your ad platforms in minutes • Real-time updates • Weekly reports delivered
         </div>
 
-        <p class="pricing">$800 one-time setup • No monthly fees</p>
+        <p style="font-size: 24px; font-weight: 600; margin: 40px 0;">
+            $800 one-time setup • No monthly fees
+        </p>
 
-        <a href="mailto:sorenvoight@halfcubes.com" class="cta-button">Book a Demo</a>
-    </div>
+        <a href="mailto:sorenvoight@halfcubes.com"
+           style="display: inline-block; background: #E60000; color: white; padding: 18px 45px;
+                  text-decoration: none; border-radius: 8px; font-size: 18px; font-weight: 600;
+                  box-shadow: 0 4px 12px rgba(230,0,0,0.3); transition: all 0.3s;"
+           onmouseover="this.style.background='#CC0000'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(230,0,0,0.4)';"
+           onmouseout="this.style.background='#E60000'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(230,0,0,0.3)';">
+            Book a Demo
+        </a>
 
-    <!-- Footer -->
-    <div class="footer">
-        <p>Built by Soren Voight</p>
-        <p><a href="mailto:sorenvoight@halfcubes.com">sorenvoight@halfcubes.com</a></p>
+        <div style="margin-top: 80px; padding-top: 40px; border-top: 1px solid #eee; color: #666; font-size: 14px;">
+            Built by Soren Voight<br>
+            <a href="mailto:sorenvoight@halfcubes.com" style="color: #E60000; text-decoration: none;">sorenvoight@halfcubes.com</a>
+        </div>
+
     </div>
 
     <script>
