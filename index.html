@@ -46,7 +46,7 @@
         }
 
         .logo h1 {
-            font-size: 80px;
+            font-size: 110px;
             font-weight: 700;
             color: #000000;
             line-height: 0.9;
@@ -294,21 +294,22 @@
 
         // ===== SPLIT #1: VERTICAL SPLIT =====
         function createSplit1() {
-            const leftGeo = new THREE.BoxGeometry(0.5, 1, 1);
+            // Make cube taller and narrower to match reference proportions
+            const leftGeo = new THREE.BoxGeometry(0.35, 1.5, 0.8);
             leftPiece = new THREE.Mesh(leftGeo, faceMaterials);
-            leftPiece.position.set(-0.25, 0, 0);
+            leftPiece.position.set(-0.175, 0, 0);
             addEdges(leftPiece);
 
-            const rightGeo = new THREE.BoxGeometry(0.5, 1, 1);
+            const rightGeo = new THREE.BoxGeometry(0.35, 1.5, 0.8);
             rightPiece = new THREE.Mesh(rightGeo, faceMaterials);
-            rightPiece.position.set(0.25, 0, 0);
+            rightPiece.position.set(0.175, 0, 0);
             addEdges(rightPiece);
 
             scene.add(leftPiece, rightPiece);
 
             const tl = gsap.timeline({ paused: true });
-            tl.to(leftPiece.position, { x: -1.25, duration: 1, ease: "power2.inOut" }, 0);
-            tl.to(rightPiece.position, { x: 1.25, duration: 1, ease: "power2.inOut" }, 0);
+            tl.to(leftPiece.position, { x: -1.0, duration: 1, ease: "power2.inOut" }, 0);
+            tl.to(rightPiece.position, { x: 1.0, duration: 1, ease: "power2.inOut" }, 0);
 
             return tl;
         }
