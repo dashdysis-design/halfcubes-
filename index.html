@@ -68,13 +68,13 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            padding-top: 80px;
+            padding-top: 180px;
         }
 
         #cube-canvas {
             display: block;
-            width: 300px;
-            height: 200px;
+            width: 900px;
+            height: 600px;
         }
 
         /* ===== RIGHT SIDE (Black with content) ===== */
@@ -280,8 +280,8 @@
             scene.background = new THREE.Color(0xf5f5f5);
 
             // Camera - orthographic for flat isometric look
-            const aspect = 300 / 200;
-            const frustumSize = 1.5;
+            const aspect = 900 / 600;
+            const frustumSize = 4.5;
             camera = new THREE.OrthographicCamera(
                 frustumSize * aspect / -2,
                 frustumSize * aspect / 2,
@@ -297,7 +297,7 @@
 
             // Renderer
             renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(300, 200);
+            renderer.setSize(900, 600);
             document.getElementById('cube-canvas').appendChild(renderer.domElement);
 
             // Create materials
