@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HalfCubes - Automated Marketing Dashboards</title>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -20,13 +18,20 @@
             overflow-x: hidden;
         }
 
+        /* ===== RED BAR AT TOP ===== */
+        .top-red-bar {
+            background: #E60000;
+            height: 10px;
+            width: 100%;
+        }
+
         /* ===== SPLIT SCREEN LAYOUT ===== */
         .container {
             display: flex;
-            min-height: 100vh;
+            min-height: calc(100vh - 10px);
         }
 
-        /* ===== LEFT SIDE (White with cube) ===== */
+        /* ===== LEFT SIDE (White with logo) ===== */
         .left-side {
             flex: 1;
             background: #f5f5f5;
@@ -35,35 +40,16 @@
             position: relative;
         }
 
-        .red-bar {
-            background: #E60000;
-            height: 60px;
-            width: 100%;
-        }
-
         .logo {
-            padding: 40px 60px;
+            padding: 30px 50px;
         }
 
         .logo h1 {
-            font-size: 110px;
+            font-size: 90px;
             font-weight: 700;
             color: #000000;
             line-height: 0.9;
             font-family: Georgia, serif;
-        }
-
-        .cube-area {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 40px;
-        }
-
-        canvas {
-            cursor: pointer;
-            display: block;
         }
 
         /* ===== RIGHT SIDE (Black with content) ===== */
@@ -121,10 +107,13 @@
             text-decoration: none;
             font-size: 22px;
             font-weight: 700;
-            padding: 20px 60px;
+            padding: 20px 40px;
             border-radius: 8px;
             transition: all 0.3s;
             box-shadow: 0 4px 12px rgba(230, 0, 0, 0.4);
+            width: 200px;
+            text-align: center;
+            margin: 0 auto;
         }
 
         .cta-button:hover {
@@ -159,7 +148,7 @@
             }
 
             .logo h1 {
-                font-size: 60px;
+                font-size: 70px;
             }
 
             .headline {
@@ -173,7 +162,7 @@
 
         @media (max-width: 768px) {
             .logo h1 {
-                font-size: 48px;
+                font-size: 50px;
             }
 
             .headline {
@@ -191,11 +180,12 @@
 
             .cta-button {
                 font-size: 18px;
-                padding: 16px 40px;
+                padding: 16px 30px;
+                width: 180px;
             }
 
             .logo {
-                padding: 30px 40px;
+                padding: 20px 30px;
             }
 
             .right-side {
@@ -205,18 +195,16 @@
     </style>
 </head>
 <body>
+    <!-- Red Bar at Very Top -->
+    <div class="top-red-bar"></div>
+
     <div class="container">
         <!-- LEFT SIDE -->
         <div class="left-side">
-            <div class="red-bar"></div>
-
             <div class="logo">
                 <h1>HalfCubes</h1>
             </div>
-
-            <div class="cube-area">
-                <canvas id="canvas" width="400" height="400"></canvas>
-            </div>
+            <!-- Empty space for your interactive cube -->
         </div>
 
         <!-- RIGHT SIDE -->
@@ -249,106 +237,5 @@
             </div>
         </div>
     </div>
-
-    <script>
-        // ===== SCENE SETUP =====
-        const canvas = document.getElementById('canvas');
-        const scene = new THREE.Scene();
-
-        // Isometric orthographic camera
-        const camera = new THREE.OrthographicCamera(-2.5, 2.5, 1.5, -1.5, 0.1, 1000);
-        camera.position.set(10, 10, 10);
-        camera.lookAt(0, 0, 0);
-
-        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-        renderer.setSize(400, 400);
-        renderer.setClearColor(0xf5f5f5, 1);
-
-        // ===== LIGHTING =====
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-        scene.add(ambientLight);
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
-        directionalLight.position.set(5, 10, 7);
-        scene.add(directionalLight);
-
-        // ===== MATERIALS =====
-        const faceMaterials = [
-            new THREE.MeshStandardMaterial({ color: 0x960300 }), // right +X
-            new THREE.MeshStandardMaterial({ color: 0x960300 }), // left -X
-            new THREE.MeshStandardMaterial({ color: 0xaf0400 }), // top +Y
-            new THREE.MeshStandardMaterial({ color: 0xaf0400 }), // bottom -Y
-            new THREE.MeshStandardMaterial({ color: 0x960300 }), // front +Z
-            new THREE.MeshStandardMaterial({ color: 0x560000 })  // back -Z
-        ];
-
-        // ===== CURRENT SPLIT & PIECES =====
-        let currentSplit = null;
-        let leftPiece, rightPiece;
-
-        // ===== HELPER: Add edges to mesh =====
-        function addEdges(mesh) {
-            const edges = new THREE.EdgesGeometry(mesh.geometry);
-            const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 2 }));
-            mesh.add(line);
-        }
-
-        // ===== SPLIT #1: VERTICAL SPLIT =====
-        function createSplit1() {
-            // Make cube taller and narrower to match reference proportions
-            const leftGeo = new THREE.BoxGeometry(0.35, 1.5, 0.8);
-            leftPiece = new THREE.Mesh(leftGeo, faceMaterials);
-            leftPiece.position.set(-0.175, 0, 0);
-            addEdges(leftPiece);
-
-            const rightGeo = new THREE.BoxGeometry(0.35, 1.5, 0.8);
-            rightPiece = new THREE.Mesh(rightGeo, faceMaterials);
-            rightPiece.position.set(0.175, 0, 0);
-            addEdges(rightPiece);
-
-            scene.add(leftPiece, rightPiece);
-
-            const tl = gsap.timeline({ paused: true });
-            tl.to(leftPiece.position, { x: -1.0, duration: 1, ease: "power2.inOut" }, 0);
-            tl.to(rightPiece.position, { x: 1.0, duration: 1, ease: "power2.inOut" }, 0);
-
-            return tl;
-        }
-
-        // ===== RENDER LOOP =====
-        function animate() {
-            renderer.render(scene, camera);
-            requestAnimationFrame(animate);
-        }
-
-        // ===== CLICK HANDLER =====
-        canvas.addEventListener('click', () => {
-            if (!currentSplit) return;
-
-            const isForward = currentSplit.progress() < 0.5;
-
-            if (isForward) {
-                currentSplit.play();
-            } else {
-                currentSplit.reverse();
-            }
-        });
-
-        // ===== RESPONSIVE CANVAS =====
-        function resizeCanvas() {
-            const cubeArea = document.querySelector('.cube-area');
-            const size = Math.min(cubeArea.offsetWidth - 80, 400);
-
-            canvas.width = size;
-            canvas.height = size;
-            renderer.setSize(size, size);
-        }
-
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        // ===== INIT =====
-        currentSplit = createSplit1();
-        animate();
-    </script>
 </body>
 </html>
