@@ -14,109 +14,240 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-            background: #FFFFFF;
-            color: #000000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', serif;
+            background: #000000;
+            color: #FFFFFF;
+            overflow-x: hidden;
         }
 
-        /* ===== RED TOP BAR ===== */
-        .top-bar {
+        /* ===== SPLIT SCREEN LAYOUT ===== */
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ===== LEFT SIDE (White with cube) ===== */
+        .left-side {
+            flex: 1;
+            background: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .red-bar {
             background: #E60000;
-            height: 70px;
+            height: 60px;
             width: 100%;
         }
 
-        /* ===== LOGO ===== */
         .logo {
-            text-align: center;
-            padding: 30px 20px 20px;
+            padding: 40px 60px;
         }
 
         .logo h1 {
-            font-size: 48px;
-            font-weight: bold;
+            font-size: 80px;
+            font-weight: 700;
             color: #000000;
-            letter-spacing: -1px;
+            line-height: 0.9;
+            font-family: Georgia, serif;
         }
 
-        /* ===== CUBE SECTION ===== */
-        .cube-container {
+        .cube-area {
+            flex: 1;
             display: flex;
-            justify-content: center;
             align-items: center;
-            min-height: 400px;
-            padding: 20px;
-            background: #FFFFFF;
+            justify-content: center;
+            padding: 40px;
         }
 
         canvas {
             cursor: pointer;
             display: block;
-            max-width: 100%;
-            height: auto;
+        }
+
+        /* ===== RIGHT SIDE (Black with content) ===== */
+        .right-side {
+            flex: 1;
+            background: #000000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 80px 60px;
+        }
+
+        .headline {
+            font-size: 56px;
+            font-weight: 700;
+            margin-bottom: 40px;
+            line-height: 1.1;
+            font-family: Georgia, serif;
+        }
+
+        .headline .red-text {
+            color: #E60000;
+        }
+
+        .subheadline {
+            font-size: 18px;
+            line-height: 1.8;
+            margin-bottom: 20px;
+            font-family: 'Courier New', monospace;
+            color: #FFFFFF;
+        }
+
+        .subheadline .red-highlight {
+            color: #E60000;
+        }
+
+        .features {
+            font-size: 18px;
+            margin: 40px 0;
+            font-family: 'Courier New', monospace;
+            line-height: 1.8;
+        }
+
+        .pricing {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 40px 0;
+            color: #FFFFFF;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: #E60000;
+            color: #FFFFFF;
+            text-decoration: none;
+            font-size: 22px;
+            font-weight: 700;
+            padding: 20px 60px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(230, 0, 0, 0.4);
+        }
+
+        .cta-button:hover {
+            background: #CC0000;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(230, 0, 0, 0.6);
+        }
+
+        .footer {
+            margin-top: 80px;
+            font-size: 16px;
+            font-family: 'Courier New', monospace;
+            line-height: 1.8;
+            color: #FFFFFF;
+        }
+
+        .footer a {
+            color: #FFFFFF;
+            text-decoration: none;
         }
 
         /* ===== RESPONSIVE ===== */
-        @media (max-width: 768px) {
-            .logo h1 {
-                font-size: 36px;
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
             }
 
-            canvas {
+            .left-side,
+            .right-side {
+                flex: none;
                 width: 100%;
-                height: auto;
+            }
+
+            .logo h1 {
+                font-size: 60px;
+            }
+
+            .headline {
+                font-size: 40px;
+            }
+
+            .right-side {
+                padding: 60px 40px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .logo h1 {
+                font-size: 48px;
+            }
+
+            .headline {
+                font-size: 32px;
+            }
+
+            .subheadline,
+            .features {
+                font-size: 16px;
+            }
+
+            .pricing {
+                font-size: 20px;
+            }
+
+            .cta-button {
+                font-size: 18px;
+                padding: 16px 40px;
+            }
+
+            .logo {
+                padding: 30px 40px;
+            }
+
+            .right-side {
+                padding: 40px 30px;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Red Top Bar -->
-    <div class="top-bar"></div>
+    <div class="container">
+        <!-- LEFT SIDE -->
+        <div class="left-side">
+            <div class="red-bar"></div>
 
-    <!-- Logo -->
-    <div class="logo">
-        <h1>HalfCubes</h1>
-    </div>
+            <div class="logo">
+                <h1>HalfCubes</h1>
+            </div>
 
-    <!-- Interactive Cube -->
-    <div class="cube-container">
-        <canvas id="canvas" width="800" height="400"></canvas>
-    </div>
-
-    <!-- Content Section -->
-    <div style="max-width: 800px; margin: 60px auto; padding: 40px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
-
-        <h1 style="font-size: 48px; font-weight: 700; margin-bottom: 20px; letter-spacing: -1px;">
-            Automated Marketing Dashboards<br>for B2B Companies
-        </h1>
-
-        <p style="font-size: 20px; color: #666; margin-bottom: 50px; line-height: 1.6;">
-            Real-time reporting from Meta Ads, Google Analytics, and your CRM.<br>
-            Save 5-10 hours/week on manual data pulling.
-        </p>
-
-        <div style="font-size: 18px; margin: 40px 0; color: #333;">
-            Connect your ad platforms in minutes • Real-time updates • Weekly reports delivered
+            <div class="cube-area">
+                <canvas id="canvas" width="400" height="400"></canvas>
+            </div>
         </div>
 
-        <p style="font-size: 24px; font-weight: 600; margin: 40px 0;">
-            $800 one-time setup • No monthly fees
-        </p>
+        <!-- RIGHT SIDE -->
+        <div class="right-side">
+            <h1 class="headline">
+                <span class="red-text">Automated</span> Marketing<br>
+                Dashboards for B2B<br>
+                Companies
+            </h1>
 
-        <a href="mailto:sorenvoight@halfcubes.com"
-           style="display: inline-block; background: #E60000; color: white; padding: 18px 45px;
-                  text-decoration: none; border-radius: 8px; font-size: 18px; font-weight: 600;
-                  box-shadow: 0 4px 12px rgba(230,0,0,0.3); transition: all 0.3s;"
-           onmouseover="this.style.background='#CC0000'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(230,0,0,0.4)';"
-           onmouseout="this.style.background='#E60000'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(230,0,0,0.3)';">
-            Book a Demo
-        </a>
+            <p class="subheadline">
+                Real-time reporting from Meta Ads, Google<br>
+                Analytics, and your CRM.<br>
+                Save <span class="red-highlight">5-10 hours/week</span> on manual data pulling.
+            </p>
 
-        <div style="margin-top: 80px; padding-top: 40px; border-top: 1px solid #eee; color: #666; font-size: 14px;">
-            Built by Soren Voight<br>
-            <a href="mailto:sorenvoight@halfcubes.com" style="color: #E60000; text-decoration: none;">sorenvoight@halfcubes.com</a>
+            <div class="features">
+                Connect your ad platforms in minutes<br>
+                • Real-time updates • Weekly reports<br>
+                delivered
+            </div>
+
+            <p class="pricing">$800 one-time setup • No monthly fees</p>
+
+            <a href="mailto:sorenvoight@halfcubes.com" class="cta-button">Book a demo</a>
+
+            <div class="footer">
+                Built by Soren Voight<br>
+                <a href="mailto:sorenvoight@halfcubes.com">sorenvoight@halfcubes.com</a>
+            </div>
         </div>
-
     </div>
 
     <script>
@@ -130,8 +261,8 @@
         camera.lookAt(0, 0, 0);
 
         const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-        renderer.setSize(800, 400);
-        renderer.setClearColor(0xFFFFFF, 1);
+        renderer.setSize(400, 400);
+        renderer.setClearColor(0xf5f5f5, 1);
 
         // ===== LIGHTING =====
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
@@ -203,15 +334,12 @@
 
         // ===== RESPONSIVE CANVAS =====
         function resizeCanvas() {
-            const container = document.querySelector('.cube-container');
-            const containerWidth = container.offsetWidth;
-            const maxWidth = 800;
-            const width = Math.min(containerWidth - 40, maxWidth);
-            const height = width * 0.5; // Maintain aspect ratio
+            const cubeArea = document.querySelector('.cube-area');
+            const size = Math.min(cubeArea.offsetWidth - 80, 400);
 
-            canvas.width = width;
-            canvas.height = height;
-            renderer.setSize(width, height);
+            canvas.width = size;
+            canvas.height = size;
+            renderer.setSize(size, size);
         }
 
         window.addEventListener('resize', resizeCanvas);
