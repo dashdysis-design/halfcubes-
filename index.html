@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Halfcubes</title>
+    <title>HalfCubes - Automated Marketing Dashboards</title>
     <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
     <style>
@@ -14,24 +14,219 @@
         }
 
         body {
-            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #FFFFFF;
+            color: #000000;
+        }
+
+        /* ===== RED TOP BAR ===== */
+        .top-bar {
+            background: #E60000;
+            height: 70px;
+            width: 100%;
+        }
+
+        /* ===== LOGO ===== */
+        .logo {
+            text-align: center;
+            padding: 30px 20px 20px;
+        }
+
+        .logo h1 {
+            font-size: 48px;
+            font-weight: bold;
+            color: #000000;
+            letter-spacing: -1px;
+        }
+
+        /* ===== CUBE SECTION ===== */
+        .cube-container {
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: #fafaf8;
-            font-family: 'Courier New', monospace;
+            min-height: 400px;
             padding: 20px;
+            background: #FFFFFF;
         }
 
         canvas {
             cursor: pointer;
             display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* ===== CONTENT SECTION ===== */
+        .content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .headline {
+            font-size: 40px;
+            font-weight: bold;
+            color: #000000;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .subheadline {
+            font-size: 20px;
+            color: #666666;
+            margin-bottom: 50px;
+            line-height: 1.5;
+        }
+
+        /* ===== FEATURES ===== */
+        .features {
+            text-align: left;
+            max-width: 500px;
+            margin: 0 auto 50px;
+        }
+
+        .features ul {
+            list-style: none;
+        }
+
+        .features li {
+            font-size: 18px;
+            color: #000000;
+            padding: 12px 0;
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .features li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #E60000;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        /* ===== PRICING ===== */
+        .pricing {
+            font-size: 22px;
+            font-weight: bold;
+            color: #000000;
+            margin-bottom: 30px;
+        }
+
+        /* ===== CTA BUTTON ===== */
+        .cta-button {
+            display: inline-block;
+            background: #E60000;
+            color: #FFFFFF;
+            text-decoration: none;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 18px 50px;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+            margin-bottom: 60px;
+        }
+
+        .cta-button:hover {
+            background: #CC0000;
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            background: #000000;
+            color: #FFFFFF;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .footer p {
+            font-size: 16px;
+            line-height: 1.8;
+        }
+
+        .footer a {
+            color: #FFFFFF;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .logo h1 {
+                font-size: 36px;
+            }
+
+            .headline {
+                font-size: 28px;
+            }
+
+            .subheadline {
+                font-size: 18px;
+            }
+
+            .features li {
+                font-size: 16px;
+            }
+
+            .pricing {
+                font-size: 20px;
+            }
+
+            .cta-button {
+                font-size: 18px;
+                padding: 15px 40px;
+            }
+
+            canvas {
+                width: 100%;
+                height: auto;
+            }
         }
     </style>
 </head>
 <body>
-    <canvas id="canvas" width="800" height="500"></canvas>
+    <!-- Red Top Bar -->
+    <div class="top-bar"></div>
+
+    <!-- Logo -->
+    <div class="logo">
+        <h1>HalfCubes</h1>
+    </div>
+
+    <!-- Interactive Cube -->
+    <div class="cube-container">
+        <canvas id="canvas" width="800" height="400"></canvas>
+    </div>
+
+    <!-- Content Section -->
+    <div class="content">
+        <h2 class="headline">Automated Marketing Dashboards for B2B Companies</h2>
+
+        <p class="subheadline">Real-time reporting from Meta Ads, Google Analytics, and your CRM. Save 5-10 hours/week on manual data pulling.</p>
+
+        <div class="features">
+            <ul>
+                <li>Connect your ad platforms in minutes</li>
+                <li>Real-time dashboard updates automatically</li>
+                <li>Weekly reports delivered to leadership</li>
+            </ul>
+        </div>
+
+        <p class="pricing">$800 one-time setup • No monthly fees</p>
+
+        <a href="mailto:sorenvoight@halfcubes.com" class="cta-button">Book a Demo</a>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Built by Soren Voight</p>
+        <p><a href="mailto:sorenvoight@halfcubes.com">sorenvoight@halfcubes.com</a></p>
+    </div>
 
     <script>
         // ===== SCENE SETUP =====
@@ -44,8 +239,8 @@
         camera.lookAt(0, 0, 0);
 
         const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-        renderer.setSize(800, 500);
-        renderer.setClearColor(0xfafaf8, 1);
+        renderer.setSize(800, 400);
+        renderer.setClearColor(0xFFFFFF, 1);
 
         // ===== LIGHTING =====
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
@@ -76,16 +271,12 @@
         }
 
         // ===== SPLIT #1: VERTICAL SPLIT =====
-        // Two halves: left (x=-0.25) and right (x=+0.25)
-        // When together at origin, they form a 1x1x1 cube
         function createSplit1() {
-            // Left piece: 0.5 wide, positioned at x=-0.25 so right edge at x=0
             const leftGeo = new THREE.BoxGeometry(0.5, 1, 1);
             leftPiece = new THREE.Mesh(leftGeo, faceMaterials);
             leftPiece.position.set(-0.25, 0, 0);
             addEdges(leftPiece);
 
-            // Right piece: 0.5 wide, positioned at x=+0.25 so left edge at x=0
             const rightGeo = new THREE.BoxGeometry(0.5, 1, 1);
             rightPiece = new THREE.Mesh(rightGeo, faceMaterials);
             rightPiece.position.set(0.25, 0, 0);
@@ -93,14 +284,12 @@
 
             scene.add(leftPiece, rightPiece);
 
-            // GSAP timeline for split animation
             const tl = gsap.timeline({ paused: true });
             tl.to(leftPiece.position, { x: -1.25, duration: 1, ease: "power2.inOut" }, 0);
             tl.to(rightPiece.position, { x: 1.25, duration: 1, ease: "power2.inOut" }, 0);
 
             return tl;
         }
-
 
         // ===== RENDER LOOP =====
         function animate() {
@@ -120,6 +309,22 @@
                 currentSplit.reverse();
             }
         });
+
+        // ===== RESPONSIVE CANVAS =====
+        function resizeCanvas() {
+            const container = document.querySelector('.cube-container');
+            const containerWidth = container.offsetWidth;
+            const maxWidth = 800;
+            const width = Math.min(containerWidth - 40, maxWidth);
+            const height = width * 0.5; // Maintain aspect ratio
+
+            canvas.width = width;
+            canvas.height = height;
+            renderer.setSize(width, height);
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
 
         // ===== INIT =====
         currentSplit = createSplit1();
