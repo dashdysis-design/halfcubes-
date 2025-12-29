@@ -21,14 +21,17 @@
         /* ===== RED BAR AT TOP ===== */
         .top-red-bar {
             background: #E60000;
-            height: 10px;
+            height: 85px;
             width: 100%;
+            position: relative;
+            z-index: 1;
         }
 
         /* ===== SPLIT SCREEN LAYOUT ===== */
         .container {
             display: flex;
-            min-height: calc(100vh - 10px);
+            min-height: 100vh;
+            margin-top: -85px;
         }
 
         /* ===== LEFT SIDE (White with logo) ===== */
@@ -38,10 +41,13 @@
             display: flex;
             flex-direction: column;
             position: relative;
+            z-index: 2;
         }
 
         .logo {
             padding: 30px 50px;
+            position: relative;
+            z-index: 3;
         }
 
         .logo h1 {
@@ -60,6 +66,8 @@
             flex-direction: column;
             justify-content: center;
             padding: 80px 60px;
+            position: relative;
+            z-index: 3;
         }
 
         .headline {
