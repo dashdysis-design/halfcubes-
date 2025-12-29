@@ -64,12 +64,6 @@
             new THREE.MeshStandardMaterial({ color: 0x560000 })  // back -Z
         ];
 
-        // ===== SOUND EFFECTS =====
-        const splitSound = new Audio('moan%231.mp3');
-        const mergeSound = new Audio('moan%232.mp3');
-        splitSound.volume = 0.5;
-        mergeSound.volume = 0.5;
-
         // ===== CURRENT SPLIT & PIECES =====
         let currentSplit = null;
         let leftPiece, rightPiece;
@@ -120,14 +114,9 @@
 
             const isForward = currentSplit.progress() < 0.5;
 
-            // Play sound
             if (isForward) {
-                splitSound.currentTime = 0;
-                splitSound.play().catch(e => console.log('Audio play failed:', e));
                 currentSplit.play();
             } else {
-                mergeSound.currentTime = 0;
-                mergeSound.play().catch(e => console.log('Audio play failed:', e));
                 currentSplit.reverse();
             }
         });
