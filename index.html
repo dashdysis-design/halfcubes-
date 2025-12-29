@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HalfCubes - Automated Marketing Dashboards</title>
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -68,10 +68,13 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
+            padding-top: 80px;
         }
 
         #cube-canvas {
             display: block;
+            width: 300px;
+            height: 200px;
         }
 
         /* ===== RIGHT SIDE (Black with content) ===== */
@@ -229,7 +232,7 @@
                 <h1>HalfCubes</h1>
             </div>
             <div class="cube-container" id="cubeContainer">
-                <canvas id="cube-canvas" width="300" height="300"></canvas>
+                <div id="cube-canvas"></div>
             </div>
         </div>
 
@@ -265,132 +268,143 @@
     </div>
 
     <script>
-        // Get canvas and context
-        const canvas = document.getElementById('cube-canvas');
-        const ctx = canvas.getContext('2d');
-
-        // Cube dimensions (isometric)
-        const cubeSize = 100;
+        let scene, camera, renderer;
+        let leftHalf, rightHalf;
         let isSplit = false;
-        let leftOffset = 0;
-        let rightOffset = 0;
+        let animationProgress = 0;
+        let targetProgress = 0;
 
-        // Hand-drawn style helper - adds slight variations to lines
-        function drawHandDrawnLine(x1, y1, x2, y2) {
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
+        function init() {
+            // Scene setup
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf5f5f5);
 
-            // Calculate segments for hand-drawn effect
-            const segments = 8;
-            const dx = (x2 - x1) / segments;
-            const dy = (y2 - y1) / segments;
+            // Camera - orthographic for flat isometric look
+            const aspect = 300 / 200;
+            const frustumSize = 1.5;
+            camera = new THREE.OrthographicCamera(
+                frustumSize * aspect / -2,
+                frustumSize * aspect / 2,
+                frustumSize / 2,
+                frustumSize / -2,
+                0.1,
+                1000
+            );
 
-            for (let i = 1; i <= segments; i++) {
-                const wobble = (Math.random() - 0.5) * 0.8; // Slight wobble
-                const x = x1 + dx * i + wobble;
-                const y = y1 + dy * i + wobble;
-                ctx.lineTo(x, y);
-            }
+            // Position camera for isometric view
+            camera.position.set(5, 5, 5);
+            camera.lookAt(0, 0, 0);
 
-            ctx.strokeStyle = '#000000';
-            ctx.lineWidth = 2;
-            ctx.stroke();
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(300, 200);
+            document.getElementById('cube-canvas').appendChild(renderer.domElement);
+
+            // Create materials
+            const whiteMaterial = new THREE.MeshBasicMaterial({
+                color: 0xffffff,
+                polygonOffset: true,
+                polygonOffsetFactor: 1,
+                polygonOffsetUnits: 1
+            });
+
+            // Create edge material with thicker lines
+            const edgesMaterial = new THREE.LineBasicMaterial({
+                color: 0x000000,
+                linewidth: 2.5
+            });
+
+            // Create left half geometry (half cube)
+            const leftGeometry = new THREE.BoxGeometry(0.5, 1, 1);
+            leftHalf = new THREE.Group();
+
+            const leftMesh = new THREE.Mesh(leftGeometry, whiteMaterial);
+            leftMesh.position.x = -0.25;
+
+            const leftEdges = new THREE.EdgesGeometry(leftGeometry);
+            const leftLines = new THREE.LineSegments(leftEdges, edgesMaterial);
+            leftLines.position.x = -0.25;
+
+            leftHalf.add(leftMesh);
+            leftHalf.add(leftLines);
+            scene.add(leftHalf);
+
+            // Create right half geometry (half cube)
+            const rightGeometry = new THREE.BoxGeometry(0.5, 1, 1);
+            rightHalf = new THREE.Group();
+
+            const rightMesh = new THREE.Mesh(rightGeometry, whiteMaterial);
+            rightMesh.position.x = 0.25;
+
+            const rightEdges = new THREE.EdgesGeometry(rightGeometry);
+            const rightLines = new THREE.LineSegments(rightEdges, edgesMaterial);
+            rightLines.position.x = 0.25;
+
+            rightHalf.add(rightMesh);
+            rightHalf.add(rightLines);
+            scene.add(rightHalf);
+
+            // Add subtle wiggle effect
+            startWiggle();
+
+            animate();
         }
 
-        // Draw isometric cube half
-        function drawCubeHalf(offsetX, isLeft) {
-            const centerX = 150 + offsetX;
-            const centerY = 100; // Raised position
+        function startWiggle() {
+            setInterval(() => {
+                if (leftHalf && rightHalf) {
+                    const wiggleAmount = 0.002;
 
-            // Isometric 30-degree projection
-            const size = cubeSize;
+                    leftHalf.children.forEach(child => {
+                        if (child.isLineSegments) {
+                            child.position.x += (Math.random() - 0.5) * wiggleAmount;
+                            child.position.y += (Math.random() - 0.5) * wiggleAmount;
+                            child.position.z += (Math.random() - 0.5) * wiggleAmount;
+                        }
+                    });
 
-            // Key vertices for a proper isometric cube
-            const top_center = [centerX, centerY - size];
-            const bottom_center = [centerX, centerY + size];
-            const left_corner = [centerX - size * 0.866, centerY]; // 30 degree angle
-            const right_corner = [centerX + size * 0.866, centerY];
+                    rightHalf.children.forEach(child => {
+                        if (child.isLineSegments) {
+                            child.position.x += (Math.random() - 0.5) * wiggleAmount;
+                            child.position.y += (Math.random() - 0.5) * wiggleAmount;
+                            child.position.z += (Math.random() - 0.5) * wiggleAmount;
+                        }
+                    });
+                }
+            }, 80);
+        }
 
-            if (isLeft) {
-                // Left half of cube
-                const top_left = [centerX - size * 0.866 / 2, centerY - size / 2];
-                const bottom_left = [centerX - size * 0.866 / 2, centerY + size / 2];
+        function animate() {
+            requestAnimationFrame(animate);
 
-                // Draw visible edges of left half
-                drawHandDrawnLine(centerX, centerY, left_corner[0], left_corner[1]); // center to left
-                drawHandDrawnLine(left_corner[0], left_corner[1], top_left[0], top_left[1]); // left to top-left
-                drawHandDrawnLine(top_left[0], top_left[1], top_center[0], top_center[1]); // top-left to top
-                drawHandDrawnLine(centerX, centerY, top_center[0], top_center[1]); // center vertical to top
-                drawHandDrawnLine(centerX, centerY, bottom_left[0], bottom_left[1]); // center to bottom-left
-                drawHandDrawnLine(bottom_left[0], bottom_left[1], left_corner[0], left_corner[1]); // bottom-left to left
-                drawHandDrawnLine(bottom_left[0], bottom_left[1], bottom_center[0], bottom_center[1]); // bottom-left to bottom
-                drawHandDrawnLine(centerX, centerY, bottom_center[0], bottom_center[1]); // center vertical to bottom
+            // Smooth animation
+            const speed = 0.08;
+            if (Math.abs(targetProgress - animationProgress) > 0.001) {
+                animationProgress += (targetProgress - animationProgress) * speed;
             } else {
-                // Right half of cube
-                const top_right = [centerX + size * 0.866 / 2, centerY - size / 2];
-                const bottom_right = [centerX + size * 0.866 / 2, centerY + size / 2];
-
-                // Draw visible edges of right half
-                drawHandDrawnLine(centerX, centerY, right_corner[0], right_corner[1]); // center to right
-                drawHandDrawnLine(right_corner[0], right_corner[1], top_right[0], top_right[1]); // right to top-right
-                drawHandDrawnLine(top_right[0], top_right[1], top_center[0], top_center[1]); // top-right to top
-                drawHandDrawnLine(centerX, centerY, top_center[0], top_center[1]); // center vertical to top
-                drawHandDrawnLine(centerX, centerY, bottom_right[0], bottom_right[1]); // center to bottom-right
-                drawHandDrawnLine(bottom_right[0], bottom_right[1], right_corner[0], right_corner[1]); // bottom-right to right
-                drawHandDrawnLine(bottom_right[0], bottom_right[1], bottom_center[0], bottom_center[1]); // bottom-right to bottom
-                drawHandDrawnLine(centerX, centerY, bottom_center[0], bottom_center[1]); // center vertical to bottom
+                animationProgress = targetProgress;
             }
+
+            // Update positions - split horizontally
+            const splitDistance = 0.8 * animationProgress;
+            leftHalf.position.x = -splitDistance;
+            rightHalf.position.x = splitDistance;
+
+            renderer.render(scene, camera);
         }
 
-        // Render the cube
-        function render() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawCubeHalf(leftOffset, true);
-            drawCubeHalf(rightOffset, false);
-        }
-
-        // Animation function
-        function animateSplit(split) {
-            const timeline = gsap.timeline();
-
-            if (split) {
-                timeline.to({ left: leftOffset, right: rightOffset }, {
-                    left: -30,
-                    right: 30,
-                    duration: 0.8,
-                    ease: "power2.inOut",
-                    onUpdate: function() {
-                        leftOffset = this.targets()[0].left;
-                        rightOffset = this.targets()[0].right;
-                        render();
-                    }
-                });
-            } else {
-                timeline.to({ left: leftOffset, right: rightOffset }, {
-                    left: 0,
-                    right: 0,
-                    duration: 0.8,
-                    ease: "power2.inOut",
-                    onUpdate: function() {
-                        leftOffset = this.targets()[0].left;
-                        rightOffset = this.targets()[0].right;
-                        render();
-                    }
-                });
-            }
+        function toggleSplit() {
+            isSplit = !isSplit;
+            targetProgress = isSplit ? 1 : 0;
         }
 
         // Click handler
-        document.getElementById('cubeContainer').addEventListener('click', () => {
-            isSplit = !isSplit;
-            animateSplit(isSplit);
-        });
+        document.getElementById('cubeContainer').addEventListener('click', toggleSplit);
 
-        // Initial render and auto-split on load
-        render();
+        // Initialize and auto-split on load
+        init();
         setTimeout(() => {
-            isSplit = true;
-            animateSplit(true);
+            toggleSplit();
         }, 500);
     </script>
 </body>
