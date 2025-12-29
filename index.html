@@ -270,7 +270,7 @@
         const ctx = canvas.getContext('2d');
 
         // Cube dimensions (isometric)
-        const cubeSize = 50;
+        const cubeSize = 100;
         let isSplit = false;
         let leftOffset = 0;
         let rightOffset = 0;
@@ -286,7 +286,7 @@
             const dy = (y2 - y1) / segments;
 
             for (let i = 1; i <= segments; i++) {
-                const wobble = (Math.random() - 0.5) * 0.5; // Slight wobble
+                const wobble = (Math.random() - 0.5) * 0.8; // Slight wobble
                 const x = x1 + dx * i + wobble;
                 const y = y1 + dy * i + wobble;
                 ctx.lineTo(x, y);
@@ -300,46 +300,46 @@
         // Draw isometric cube half
         function drawCubeHalf(offsetX, isLeft) {
             const centerX = 150 + offsetX;
-            const centerY = 150;
+            const centerY = 70; // Raised by 80px (from 150 to 70)
 
-            // Isometric projection calculations
-            const w = cubeSize / 2;
-            const h = cubeSize;
+            // Isometric projection calculations for proper cube
+            const w = cubeSize / 2; // Half width
+            const d = cubeSize / 2; // Half depth
 
             if (isLeft) {
-                // Left half vertices
-                const v1 = [centerX - w, centerY];
-                const v2 = [centerX, centerY - w/1.732];
-                const v3 = [centerX, centerY - w/1.732 - h];
-                const v4 = [centerX - w, centerY - h];
-                const v5 = [centerX - w, centerY + w/1.732];
-                const v6 = [centerX, centerY + w/1.732 - h];
+                // Left half - isometric left face
+                const bottom_front = [centerX - w/2, centerY + w/4];
+                const bottom_back = [centerX - w/2, centerY - w/4];
+                const top_front = [centerX - w/2, centerY + w/4 - cubeSize];
+                const top_back = [centerX - w/2, centerY - w/4 - cubeSize];
+                const center_bottom = [centerX, centerY];
+                const center_top = [centerX, centerY - cubeSize];
 
-                // Draw edges
-                drawHandDrawnLine(v1[0], v1[1], v2[0], v2[1]); // bottom front
-                drawHandDrawnLine(v2[0], v2[1], v3[0], v3[1]); // right vertical
-                drawHandDrawnLine(v3[0], v3[1], v4[0], v4[1]); // top front
-                drawHandDrawnLine(v4[0], v4[1], v1[0], v1[1]); // left vertical
-                drawHandDrawnLine(v1[0], v1[1], v5[0], v5[1]); // left back
-                drawHandDrawnLine(v5[0], v5[1], v4[0], v4[1]); // back vertical
-                drawHandDrawnLine(v3[0], v3[1], v6[0], v6[1]); // top back
+                // Draw left half edges
+                drawHandDrawnLine(bottom_back[0], bottom_back[1], bottom_front[0], bottom_front[1]); // bottom left edge
+                drawHandDrawnLine(bottom_front[0], bottom_front[1], center_bottom[0], center_bottom[1]); // bottom front
+                drawHandDrawnLine(bottom_back[0], bottom_back[1], top_back[0], top_back[1]); // back vertical
+                drawHandDrawnLine(bottom_front[0], bottom_front[1], top_front[0], top_front[1]); // front vertical
+                drawHandDrawnLine(top_back[0], top_back[1], top_front[0], top_front[1]); // top left edge
+                drawHandDrawnLine(top_front[0], top_front[1], center_top[0], center_top[1]); // top front
+                drawHandDrawnLine(center_bottom[0], center_bottom[1], center_top[0], center_top[1]); // center vertical
             } else {
-                // Right half vertices
-                const v1 = [centerX, centerY - w/1.732];
-                const v2 = [centerX + w, centerY];
-                const v3 = [centerX + w, centerY - h];
-                const v4 = [centerX, centerY - w/1.732 - h];
-                const v5 = [centerX + w, centerY + w/1.732];
-                const v6 = [centerX, centerY + w/1.732 - h];
+                // Right half - isometric right face
+                const bottom_front = [centerX + w/2, centerY + w/4];
+                const bottom_back = [centerX + w/2, centerY - w/4];
+                const top_front = [centerX + w/2, centerY + w/4 - cubeSize];
+                const top_back = [centerX + w/2, centerY - w/4 - cubeSize];
+                const center_bottom = [centerX, centerY];
+                const center_top = [centerX, centerY - cubeSize];
 
-                // Draw edges
-                drawHandDrawnLine(v1[0], v1[1], v2[0], v2[1]); // bottom front
-                drawHandDrawnLine(v2[0], v2[1], v3[0], v3[1]); // right vertical
-                drawHandDrawnLine(v3[0], v3[1], v4[0], v4[1]); // top front
-                drawHandDrawnLine(v4[0], v4[1], v1[0], v1[1]); // left vertical
-                drawHandDrawnLine(v2[0], v2[1], v5[0], v5[1]); // right back
-                drawHandDrawnLine(v5[0], v5[1], v3[0], v3[1]); // back vertical
-                drawHandDrawnLine(v4[0], v4[1], v6[0], v6[1]); // top back
+                // Draw right half edges
+                drawHandDrawnLine(bottom_front[0], bottom_front[1], bottom_back[0], bottom_back[1]); // bottom right edge
+                drawHandDrawnLine(center_bottom[0], center_bottom[1], bottom_front[0], bottom_front[1]); // bottom front
+                drawHandDrawnLine(bottom_back[0], bottom_back[1], top_back[0], top_back[1]); // back vertical
+                drawHandDrawnLine(bottom_front[0], bottom_front[1], top_front[0], top_front[1]); // front vertical
+                drawHandDrawnLine(top_front[0], top_front[1], top_back[0], top_back[1]); // top right edge
+                drawHandDrawnLine(center_top[0], center_top[1], top_front[0], top_front[1]); // top front
+                drawHandDrawnLine(center_bottom[0], center_bottom[1], center_top[0], center_top[1]); // center vertical
             }
         }
 
