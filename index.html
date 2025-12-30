@@ -341,7 +341,6 @@
             ]);
             leftEdgesGeometry.setAttribute('position', new THREE.BufferAttribute(leftVertices, 3));
             const leftLines = new THREE.LineSegments(leftEdgesGeometry, edgesMaterial);
-            leftLines.position.x = -0.25;
 
             leftHalf.add(leftMesh);
             leftHalf.add(leftLines);
@@ -375,7 +374,6 @@
             ]);
             rightEdgesGeometry.setAttribute('position', new THREE.BufferAttribute(rightVertices, 3));
             const rightLines = new THREE.LineSegments(rightEdgesGeometry, edgesMaterial);
-            rightLines.position.x = 0.25;
 
             rightHalf.add(rightMesh);
             rightHalf.add(rightLines);
