@@ -349,10 +349,17 @@
                 0, -0.5, 0.5,  0, 0.5, 0.5,
                 // Back face vertical edge (middle seam - left side)
                 0, -0.5, -0.5,  0, 0.5, -0.5,
+                // Top face edge (middle seam - left side)
+                0, 0.5, -0.5,  0, 0.5, 0.5,
+                // Bottom face edge (middle seam - left side)
+                0, -0.5, -0.5,  0, -0.5, 0.5,
             ]);
             leftSeamGeometry.setAttribute('position', new THREE.BufferAttribute(leftSeamVertices, 3));
             leftSeamEdges = new THREE.LineSegments(leftSeamGeometry, edgesMaterial);
-            leftSeamEdges.visible = false; // Hidden when merged
+            leftSeamEdges.material = edgesMaterial.clone(); // Clone material for independent opacity
+            leftSeamEdges.material.transparent = true;
+            leftSeamEdges.material.opacity = 0;
+            leftSeamEdges.visible = true; // Always visible, but opacity controlled
             leftHalf.add(leftSeamEdges);
 
             scene.add(leftHalf);
@@ -392,10 +399,17 @@
                 0, -0.5, 0.5,  0, 0.5, 0.5,
                 // Back face vertical edge (middle seam - right side)
                 0, -0.5, -0.5,  0, 0.5, -0.5,
+                // Top face edge (middle seam - right side)
+                0, 0.5, -0.5,  0, 0.5, 0.5,
+                // Bottom face edge (middle seam - right side)
+                0, -0.5, -0.5,  0, -0.5, 0.5,
             ]);
             rightSeamGeometry.setAttribute('position', new THREE.BufferAttribute(rightSeamVertices, 3));
             rightSeamEdges = new THREE.LineSegments(rightSeamGeometry, edgesMaterial);
-            rightSeamEdges.visible = false; // Hidden when merged
+            rightSeamEdges.material = edgesMaterial.clone(); // Clone material for independent opacity
+            rightSeamEdges.material.transparent = true;
+            rightSeamEdges.material.opacity = 0;
+            rightSeamEdges.visible = true; // Always visible, but opacity controlled
             rightHalf.add(rightSeamEdges);
 
             scene.add(rightHalf);
@@ -419,11 +433,23 @@
             leftHalf.position.x = -splitDistance;
             rightHalf.position.x = splitDistance;
 
-            // Toggle seam edge visibility based on split progress
-            // Show seam edges when split, hide when merged
-            const seamVisible = animationProgress > 0.1;
-            if (leftSeamEdges) leftSeamEdges.visible = seamVisible;
-            if (rightSeamEdges) rightSeamEdges.visible = seamVisible;
+            // Smoothly fade seam edges based on split progress
+            // Fade in from 0.05 to 0.3, fade out from 0.3 to 0.05
+            let targetOpacity = 0;
+            if (animationProgress < 0.05) {
+                targetOpacity = 0;
+            } else if (animationProgress < 0.3) {
+                targetOpacity = (animationProgress - 0.05) / 0.25; // 0 to 1 over range 0.05-0.3
+            } else {
+                targetOpacity = 1;
+            }
+
+            if (leftSeamEdges && leftSeamEdges.material) {
+                leftSeamEdges.material.opacity = targetOpacity;
+            }
+            if (rightSeamEdges && rightSeamEdges.material) {
+                rightSeamEdges.material.opacity = targetOpacity;
+            }
 
             renderer.render(scene, camera);
         }
