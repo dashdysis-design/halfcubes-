@@ -269,6 +269,7 @@
     <script>
         let scene, camera, renderer;
         let leftHalf, rightHalf;
+        let leftSeamEdges, rightSeamEdges;
         let isSplit = false;
         let animationProgress = 0;
         let targetProgress = 0;
@@ -340,6 +341,20 @@
 
             leftHalf.add(leftMesh);
             leftHalf.add(leftLines);
+
+            // Create middle seam edges for left half (only visible when split)
+            const leftSeamGeometry = new THREE.BufferGeometry();
+            const leftSeamVertices = new Float32Array([
+                // Front face vertical edge (middle seam - left side)
+                0, -0.5, 0.5,  0, 0.5, 0.5,
+                // Back face vertical edge (middle seam - left side)
+                0, -0.5, -0.5,  0, 0.5, -0.5,
+            ]);
+            leftSeamGeometry.setAttribute('position', new THREE.BufferAttribute(leftSeamVertices, 3));
+            leftSeamEdges = new THREE.LineSegments(leftSeamGeometry, edgesMaterial);
+            leftSeamEdges.visible = false; // Hidden when merged
+            leftHalf.add(leftSeamEdges);
+
             scene.add(leftHalf);
 
             // Create right half geometry (half cube)
@@ -369,6 +384,20 @@
 
             rightHalf.add(rightMesh);
             rightHalf.add(rightLines);
+
+            // Create middle seam edges for right half (only visible when split)
+            const rightSeamGeometry = new THREE.BufferGeometry();
+            const rightSeamVertices = new Float32Array([
+                // Front face vertical edge (middle seam - right side)
+                0, -0.5, 0.5,  0, 0.5, 0.5,
+                // Back face vertical edge (middle seam - right side)
+                0, -0.5, -0.5,  0, 0.5, -0.5,
+            ]);
+            rightSeamGeometry.setAttribute('position', new THREE.BufferAttribute(rightSeamVertices, 3));
+            rightSeamEdges = new THREE.LineSegments(rightSeamGeometry, edgesMaterial);
+            rightSeamEdges.visible = false; // Hidden when merged
+            rightHalf.add(rightSeamEdges);
+
             scene.add(rightHalf);
 
             animate();
@@ -389,6 +418,12 @@
             const splitDistance = 0.8 * animationProgress;
             leftHalf.position.x = -splitDistance;
             rightHalf.position.x = splitDistance;
+
+            // Toggle seam edge visibility based on split progress
+            // Show seam edges when split, hide when merged
+            const seamVisible = animationProgress > 0.1;
+            if (leftSeamEdges) leftSeamEdges.visible = seamVisible;
+            if (rightSeamEdges) rightSeamEdges.visible = seamVisible;
 
             renderer.render(scene, camera);
         }
