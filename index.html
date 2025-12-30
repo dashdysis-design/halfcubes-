@@ -343,34 +343,7 @@
             rightHalf.add(rightLines);
             scene.add(rightHalf);
 
-            // Add subtle wiggle effect
-            startWiggle();
-
             animate();
-        }
-
-        function startWiggle() {
-            setInterval(() => {
-                if (leftHalf && rightHalf) {
-                    const wiggleAmount = 0.01;
-
-                    leftHalf.children.forEach(child => {
-                        if (child.isLineSegments) {
-                            child.position.x += (Math.random() - 0.5) * wiggleAmount;
-                            child.position.y += (Math.random() - 0.5) * wiggleAmount;
-                            child.position.z += (Math.random() - 0.5) * wiggleAmount;
-                        }
-                    });
-
-                    rightHalf.children.forEach(child => {
-                        if (child.isLineSegments) {
-                            child.position.x += (Math.random() - 0.5) * wiggleAmount;
-                            child.position.y += (Math.random() - 0.5) * wiggleAmount;
-                            child.position.z += (Math.random() - 0.5) * wiggleAmount;
-                        }
-                    });
-                }
-            }, 80);
         }
 
         function animate() {
