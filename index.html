@@ -270,6 +270,7 @@
         let scene, camera, renderer;
         let leftHalf, rightHalf;
         let leftSeamEdges, rightSeamEdges;
+        let allEdgeMaterials = []; // Store all edge materials for color switching
         let isSplit = false;
         let animationProgress = 0;
         let targetProgress = 0;
@@ -313,6 +314,7 @@
                 color: 0x000000,
                 linewidth: 2.5
             });
+            allEdgeMaterials.push(edgesMaterial);
 
             // Create left half geometry (half cube)
             const leftGeometry = new THREE.BoxGeometry(0.5, 1, 1);
@@ -360,6 +362,7 @@
             leftSeamEdges.material.transparent = true;
             leftSeamEdges.material.opacity = 0;
             leftSeamEdges.visible = true; // Always visible, but opacity controlled
+            allEdgeMaterials.push(leftSeamEdges.material);
             leftHalf.add(leftSeamEdges);
 
             scene.add(leftHalf);
@@ -410,6 +413,7 @@
             rightSeamEdges.material.transparent = true;
             rightSeamEdges.material.opacity = 0;
             rightSeamEdges.visible = true; // Always visible, but opacity controlled
+            allEdgeMaterials.push(rightSeamEdges.material);
             rightHalf.add(rightSeamEdges);
 
             scene.add(rightHalf);
@@ -450,6 +454,30 @@
             if (rightSeamEdges && rightSeamEdges.material) {
                 rightSeamEdges.material.opacity = targetOpacity;
             }
+
+            // Day/Night theme transition based on split state
+            // Merged = Day (white bg, black edges), Split = Night (black bg, white edges)
+            const dayColor = { r: 245, g: 245, b: 245 }; // #f5f5f5
+            const nightColor = { r: 0, g: 0, b: 0 }; // #000000
+
+            // Interpolate background color
+            const bgR = Math.round(dayColor.r + (nightColor.r - dayColor.r) * animationProgress);
+            const bgG = Math.round(dayColor.g + (nightColor.g - dayColor.g) * animationProgress);
+            const bgB = Math.round(dayColor.b + (nightColor.b - dayColor.b) * animationProgress);
+            scene.background.setRGB(bgR / 255, bgG / 255, bgB / 255);
+
+            // Interpolate edge colors (black to white)
+            const edgeR = Math.round(0 + (255 - 0) * animationProgress);
+            const edgeG = Math.round(0 + (255 - 0) * animationProgress);
+            const edgeB = Math.round(0 + (255 - 0) * animationProgress);
+            const edgeColorHex = (edgeR << 16) | (edgeG << 8) | edgeB;
+
+            // Update all edge materials
+            allEdgeMaterials.forEach(material => {
+                if (material) {
+                    material.color.setHex(edgeColorHex);
+                }
+            });
 
             renderer.render(scene, camera);
         }
