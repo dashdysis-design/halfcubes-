@@ -320,23 +320,20 @@
             const leftMesh = new THREE.Mesh(leftGeometry, whiteMaterial);
             leftMesh.position.x = -0.25;
 
-            // Custom edges for left half - excluding the middle seam
+            // Custom edges for left half - only outer left face
             const leftEdgesGeometry = new THREE.BufferGeometry();
             const leftVertices = new Float32Array([
-                // Left face edges
+                // Left face edges only
                 -0.5, -0.5, -0.5,  -0.5, 0.5, -0.5,
                 -0.5, 0.5, -0.5,  -0.5, 0.5, 0.5,
                 -0.5, 0.5, 0.5,  -0.5, -0.5, 0.5,
                 -0.5, -0.5, 0.5,  -0.5, -0.5, -0.5,
-                // Top edges
+                // Top edges (only to middle)
                 -0.5, 0.5, -0.5,  0, 0.5, -0.5,
                 -0.5, 0.5, 0.5,  0, 0.5, 0.5,
-                // Bottom edges
+                // Bottom edges (only to middle)
                 -0.5, -0.5, -0.5,  0, -0.5, -0.5,
                 -0.5, -0.5, 0.5,  0, -0.5, 0.5,
-                // Front/back connecting edges (excluding middle seam)
-                0, 0.5, -0.5,  0, -0.5, -0.5,
-                0, 0.5, 0.5,  0, -0.5, 0.5,
             ]);
             leftEdgesGeometry.setAttribute('position', new THREE.BufferAttribute(leftVertices, 3));
             const leftLines = new THREE.LineSegments(leftEdgesGeometry, edgesMaterial);
@@ -353,23 +350,20 @@
             const rightMesh = new THREE.Mesh(rightGeometry, whiteMaterial);
             rightMesh.position.x = 0.25;
 
-            // Custom edges for right half - excluding the middle seam
+            // Custom edges for right half - only outer right face
             const rightEdgesGeometry = new THREE.BufferGeometry();
             const rightVertices = new Float32Array([
-                // Right face edges
+                // Right face edges only
                 0.5, -0.5, -0.5,  0.5, 0.5, -0.5,
                 0.5, 0.5, -0.5,  0.5, 0.5, 0.5,
                 0.5, 0.5, 0.5,  0.5, -0.5, 0.5,
                 0.5, -0.5, 0.5,  0.5, -0.5, -0.5,
-                // Top edges
+                // Top edges (only from middle)
                 0, 0.5, -0.5,  0.5, 0.5, -0.5,
                 0, 0.5, 0.5,  0.5, 0.5, 0.5,
-                // Bottom edges
+                // Bottom edges (only from middle)
                 0, -0.5, -0.5,  0.5, -0.5, -0.5,
                 0, -0.5, 0.5,  0.5, -0.5, 0.5,
-                // Front/back connecting edges (excluding middle seam)
-                0, 0.5, -0.5,  0, -0.5, -0.5,
-                0, 0.5, 0.5,  0, -0.5, 0.5,
             ]);
             rightEdgesGeometry.setAttribute('position', new THREE.BufferAttribute(rightVertices, 3));
             const rightLines = new THREE.LineSegments(rightEdgesGeometry, edgesMaterial);
