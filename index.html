@@ -58,9 +58,16 @@
         .logo h1 {
             font-size: 63px;
             font-weight: 700;
-            color: #000000;
             line-height: 0.9;
             font-family: Georgia, serif;
+        }
+
+        .logo h1 .half {
+            color: #E60000;
+        }
+
+        .logo h1 .cubes {
+            color: #000000;
             transition: color 0.3s ease;
         }
 
@@ -230,7 +237,7 @@
         <!-- LEFT SIDE -->
         <div class="left-side">
             <div class="logo">
-                <h1>HalfCubes</h1>
+                <h1><span class="half">Half</span><span class="cubes">Cubes</span></h1>
             </div>
             <div class="cube-container" id="cubeContainer">
                 <div id="cube-canvas"></div>
@@ -495,10 +502,11 @@
                 leftSide.style.backgroundColor = `rgb(${bgR}, ${bgG}, ${bgB})`;
             }
 
-            // Update logo color - opposite of background for contrast
-            const logo = document.querySelector('.logo h1');
-            if (logo) {
-                logo.style.color = `rgb(${edgeR}, ${edgeG}, ${edgeB})`;
+            // Update "Cubes" part of logo color - opposite of background for contrast
+            // "Half" stays red (#E60000)
+            const cubesSpan = document.querySelector('.logo h1 .cubes');
+            if (cubesSpan) {
+                cubesSpan.style.color = `rgb(${edgeR}, ${edgeG}, ${edgeB})`;
             }
 
             renderer.render(scene, camera);
