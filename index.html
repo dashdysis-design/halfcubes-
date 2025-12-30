@@ -284,7 +284,6 @@
         let isSplit = false;
         let animationProgress = 0;
         let targetProgress = 0;
-        let isHovering = false; // Track hover state
 
         function init() {
             // Scene setup
@@ -485,18 +484,9 @@
             }
 
             // Interpolate edge colors - OPPOSITE of background (black to white)
-            let edgeR = Math.round(0 + (255 - 0) * animationProgress);
-            let edgeG = Math.round(0 + (255 - 0) * animationProgress);
-            let edgeB = Math.round(0 + (255 - 0) * animationProgress);
-
-            // Subtle hover effect - brighten edges by 30%
-            if (isHovering) {
-                const brightenAmount = 0.3;
-                edgeR = Math.min(255, Math.round(edgeR + (255 - edgeR) * brightenAmount));
-                edgeG = Math.min(255, Math.round(edgeG + (255 - edgeG) * brightenAmount));
-                edgeB = Math.min(255, Math.round(edgeB + (255 - edgeB) * brightenAmount));
-            }
-
+            const edgeR = Math.round(0 + (255 - 0) * animationProgress);
+            const edgeG = Math.round(0 + (255 - 0) * animationProgress);
+            const edgeB = Math.round(0 + (255 - 0) * animationProgress);
             const edgeColorHex = (edgeR << 16) | (edgeG << 8) | edgeB;
 
             // Update all edge materials
@@ -529,15 +519,6 @@
 
         // Click handler
         document.getElementById('cubeContainer').addEventListener('click', toggleSplit);
-
-        // Hover handlers for subtle interaction hint
-        document.getElementById('cubeContainer').addEventListener('mouseenter', () => {
-            isHovering = true;
-        });
-
-        document.getElementById('cubeContainer').addEventListener('mouseleave', () => {
-            isHovering = false;
-        });
 
         // Initialize and auto-split on load
         init();
