@@ -271,6 +271,7 @@
         let leftHalf, rightHalf;
         let leftSeamEdges, rightSeamEdges;
         let allEdgeMaterials = []; // Store all edge materials for color switching
+        let cubeMaterial; // Store cube material for color switching
         let isSplit = false;
         let animationProgress = 0;
         let targetProgress = 0;
@@ -302,7 +303,7 @@
             document.getElementById('cube-canvas').appendChild(renderer.domElement);
 
             // Create materials
-            const whiteMaterial = new THREE.MeshBasicMaterial({
+            cubeMaterial = new THREE.MeshBasicMaterial({
                 color: 0xffffff,
                 polygonOffset: true,
                 polygonOffsetFactor: 1,
@@ -320,7 +321,7 @@
             const leftGeometry = new THREE.BoxGeometry(0.5, 1, 1);
             leftHalf = new THREE.Group();
 
-            const leftMesh = new THREE.Mesh(leftGeometry, whiteMaterial);
+            const leftMesh = new THREE.Mesh(leftGeometry, cubeMaterial);
             leftMesh.position.x = -0.25;
 
             // Custom edges for left half
@@ -371,7 +372,7 @@
             const rightGeometry = new THREE.BoxGeometry(0.5, 1, 1);
             rightHalf = new THREE.Group();
 
-            const rightMesh = new THREE.Mesh(rightGeometry, whiteMaterial);
+            const rightMesh = new THREE.Mesh(rightGeometry, cubeMaterial);
             rightMesh.position.x = 0.25;
 
             // Custom edges for right half
@@ -456,17 +457,23 @@
             }
 
             // Day/Night theme transition based on split state
-            // Merged = Day (white bg, black edges), Split = Night (black bg, white edges)
+            // Merged = Day (white bg, white cube, black edges)
+            // Split = Night (black bg, black cube, white edges)
             const dayColor = { r: 245, g: 245, b: 245 }; // #f5f5f5
             const nightColor = { r: 0, g: 0, b: 0 }; // #000000
 
-            // Interpolate background color
+            // Interpolate background color (white to black)
             const bgR = Math.round(dayColor.r + (nightColor.r - dayColor.r) * animationProgress);
             const bgG = Math.round(dayColor.g + (nightColor.g - dayColor.g) * animationProgress);
             const bgB = Math.round(dayColor.b + (nightColor.b - dayColor.b) * animationProgress);
             scene.background.setRGB(bgR / 255, bgG / 255, bgB / 255);
 
-            // Interpolate edge colors (black to white)
+            // Update cube material to match background (white to black)
+            if (cubeMaterial) {
+                cubeMaterial.color.setRGB(bgR / 255, bgG / 255, bgB / 255);
+            }
+
+            // Interpolate edge colors - OPPOSITE of background (black to white)
             const edgeR = Math.round(0 + (255 - 0) * animationProgress);
             const edgeG = Math.round(0 + (255 - 0) * animationProgress);
             const edgeB = Math.round(0 + (255 - 0) * animationProgress);
