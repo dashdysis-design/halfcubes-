@@ -46,6 +46,7 @@
             position: relative;
             padding-top: 48px;
             z-index: 2;
+            transition: background-color 0.3s ease;
         }
 
         .logo {
@@ -70,8 +71,6 @@
             justify-content: center;
             cursor: pointer;
             margin-top: -10px;
-            background: #f5f5f5;
-            transition: background-color 0.3s ease;
         }
 
         #cube-canvas {
@@ -489,10 +488,10 @@
                 }
             });
 
-            // Update left side container background to match canvas
-            const cubeContainer = document.querySelector('.cube-container');
-            if (cubeContainer) {
-                cubeContainer.style.backgroundColor = `rgb(${bgR}, ${bgG}, ${bgB})`;
+            // Update entire left side background to match canvas
+            const leftSide = document.querySelector('.left-side');
+            if (leftSide) {
+                leftSide.style.backgroundColor = `rgb(${bgR}, ${bgG}, ${bgB})`;
             }
 
             // Update logo color - opposite of background for contrast
