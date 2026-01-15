@@ -150,7 +150,7 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            margin-top: -160px;
+            margin-top: -220px;
         }
 
         #cube-canvas {
@@ -232,19 +232,20 @@
         }
 
         .top-cta-button {
-            display: inline-block;
+            position: fixed;
+            top: 30px;
+            right: 30px;
             background: transparent;
             color: #FFFFFF;
             text-decoration: none;
             font-size: 13px;
             font-weight: 500;
-            padding: 8px 16px;
+            padding: 6px 12px;
             border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 6px;
+            border-radius: 4px;
             transition: all 0.3s;
-            margin-bottom: 30px;
-            float: right;
-            width: auto;
+            z-index: 100;
+            white-space: nowrap;
         }
 
         .top-cta-button:hover {
