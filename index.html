@@ -110,57 +110,8 @@
             position: relative;
         }
 
-        /* ===== LEFT SIDE (White with logo) ===== */
+        /* ===== LEFT SIDE (Black with content) ===== */
         .left-side {
-            flex: 0.91;
-            background: #f5f5f5;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            padding-top: 48px;
-            z-index: 2;
-            transition: background-color 0.3s ease;
-        }
-
-        .logo {
-            padding: 0 50px 30px 50px;
-            position: relative;
-            z-index: 3;
-        }
-
-        .logo h1 {
-            font-size: 63px;
-            font-weight: 700;
-            line-height: 0.9;
-            font-family: Georgia, serif;
-        }
-
-        .logo h1 .half {
-            color: #E60000;
-        }
-
-        .logo h1 .cubes {
-            color: #000000;
-            transition: color 0.3s ease;
-        }
-
-        .cube-container {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            margin-top: -170px;
-        }
-
-        #cube-canvas {
-            display: block;
-            width: 900px;
-            height: 600px;
-        }
-
-        /* ===== RIGHT SIDE (Black with content) ===== */
-        .right-side {
             flex: 1.09;
             background: #000000;
             display: flex;
@@ -284,6 +235,55 @@
             text-decoration: none;
         }
 
+        /* ===== RIGHT SIDE (White with logo + cube) ===== */
+        .right-side {
+            flex: 0.91;
+            background: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            padding-top: 48px;
+            z-index: 2;
+            transition: background-color 0.3s ease;
+        }
+
+        .logo {
+            padding: 0 50px 30px 50px;
+            position: relative;
+            z-index: 3;
+        }
+
+        .logo h1 {
+            font-size: 63px;
+            font-weight: 700;
+            line-height: 0.9;
+            font-family: Georgia, serif;
+        }
+
+        .logo h1 .half {
+            color: #E60000;
+        }
+
+        .logo h1 .cubes {
+            color: #000000;
+            transition: color 0.3s ease;
+        }
+
+        .cube-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin-top: -170px;
+        }
+
+        #cube-canvas {
+            display: block;
+            width: 900px;
+            height: 600px;
+        }
+
         /* ===== RESPONSIVE ===== */
         @media (max-width: 1024px) {
             .container {
@@ -304,7 +304,7 @@
                 font-size: 28px;
             }
 
-            .right-side {
+            .left-side {
                 padding: 60px 40px;
             }
         }
@@ -337,7 +337,7 @@
                 padding: 20px 30px;
             }
 
-            .right-side {
+            .left-side {
                 padding: 40px 30px;
             }
         }
@@ -348,18 +348,8 @@
     <div class="top-red-bar"></div>
 
     <div class="container">
-        <!-- LEFT SIDE -->
+        <!-- LEFT SIDE (text content) -->
         <div class="left-side">
-            <div class="logo">
-                <h1><span class="half">Half</span><span class="cubes">Cubes</span></h1>
-            </div>
-            <div class="cube-container" id="cubeContainer">
-                <div id="cube-canvas"></div>
-            </div>
-        </div>
-
-        <!-- RIGHT SIDE -->
-        <div class="right-side">
             <div class="content-wrapper">
                 <a href="https://calendly.com/sorenvoight/30min" class="top-cta-button" target="_blank">Book a<br>Demo</a>
             </div>
@@ -380,25 +370,32 @@
                 <a href="mailto:sorenvoight@halfcubes.com">sorenvoight@halfcubes.com</a>
             </div>
         </div>
+
+        <!-- RIGHT SIDE (logo + cube) -->
+        <div class="right-side">
+            <div class="logo">
+                <h1><span class="half">Half</span><span class="cubes">Cubes</span></h1>
+            </div>
+            <div class="cube-container" id="cubeContainer">
+                <div id="cube-canvas"></div>
+            </div>
+        </div>
     </div>
 
     <script>
         let scene, camera, renderer;
         let leftHalf, rightHalf;
         let leftSeamEdges, rightSeamEdges;
-        let allEdgeMaterials = []; // Store all edge materials for color switching
-        let cubeMaterial; // Store cube material for color switching
+        let allEdgeMaterials = [];
+        let cubeMaterial;
         let isSplit = false;
         let animationProgress = 0;
         let targetProgress = 0;
 
         function init() {
-            // Scene setup
             scene = new THREE.Scene();
-            // No background - let container background show through
             scene.background = null;
 
-            // Camera - orthographic for flat isometric look
             const aspect = 900 / 600;
             const frustumSize = 4.5;
             camera = new THREE.OrthographicCamera(
@@ -410,17 +407,14 @@
                 1000
             );
 
-            // Position camera for isometric view
             camera.position.set(5, 5, 5);
             camera.lookAt(0, 0, 0);
 
-            // Renderer with transparent background
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setClearColor(0x000000, 0); // Transparent
+            renderer.setClearColor(0x000000, 0);
             renderer.setSize(900, 600);
             document.getElementById('cube-canvas').appendChild(renderer.domElement);
 
-            // Create materials
             cubeMaterial = new THREE.MeshBasicMaterial({
                 color: 0xffffff,
                 polygonOffset: true,
@@ -428,113 +422,86 @@
                 polygonOffsetUnits: 1
             });
 
-            // Create edge material with thicker lines
             const edgesMaterial = new THREE.LineBasicMaterial({
                 color: 0x000000,
                 linewidth: 2.5
             });
             allEdgeMaterials.push(edgesMaterial);
 
-            // Create left half geometry (half cube)
             const leftGeometry = new THREE.BoxGeometry(0.5, 1, 1);
             leftHalf = new THREE.Group();
-
             const leftMesh = new THREE.Mesh(leftGeometry, cubeMaterial);
             leftMesh.position.x = -0.25;
 
-            // Custom edges for left half
             const leftEdgesGeometry = new THREE.BufferGeometry();
             const leftVertices = new Float32Array([
-                // Left face edges
                 -0.5, -0.5, -0.5,  -0.5, 0.5, -0.5,
                 -0.5, 0.5, -0.5,  -0.5, 0.5, 0.5,
                 -0.5, 0.5, 0.5,  -0.5, -0.5, 0.5,
                 -0.5, -0.5, 0.5,  -0.5, -0.5, -0.5,
-                // Top edges (only to middle)
                 -0.5, 0.5, -0.5,  0, 0.5, -0.5,
                 -0.5, 0.5, 0.5,  0, 0.5, 0.5,
-                // Bottom edges (only to middle)
                 -0.5, -0.5, -0.5,  0, -0.5, -0.5,
                 -0.5, -0.5, 0.5,  0, -0.5, 0.5,
             ]);
             leftEdgesGeometry.setAttribute('position', new THREE.BufferAttribute(leftVertices, 3));
             const leftLines = new THREE.LineSegments(leftEdgesGeometry, edgesMaterial);
-
             leftHalf.add(leftMesh);
             leftHalf.add(leftLines);
 
-            // Create middle seam edges for left half (only visible when split)
             const leftSeamGeometry = new THREE.BufferGeometry();
             const leftSeamVertices = new Float32Array([
-                // Front face vertical edge (middle seam - left side)
                 0, -0.5, 0.5,  0, 0.5, 0.5,
-                // Back face vertical edge (middle seam - left side)
                 0, -0.5, -0.5,  0, 0.5, -0.5,
-                // Top face edge (middle seam - left side)
                 0, 0.5, -0.5,  0, 0.5, 0.5,
-                // Bottom face edge (middle seam - left side)
                 0, -0.5, -0.5,  0, -0.5, 0.5,
             ]);
             leftSeamGeometry.setAttribute('position', new THREE.BufferAttribute(leftSeamVertices, 3));
             leftSeamEdges = new THREE.LineSegments(leftSeamGeometry, edgesMaterial);
-            leftSeamEdges.material = edgesMaterial.clone(); // Clone material for independent opacity
+            leftSeamEdges.material = edgesMaterial.clone();
             leftSeamEdges.material.transparent = true;
             leftSeamEdges.material.opacity = 0;
-            leftSeamEdges.visible = true; // Always visible, but opacity controlled
+            leftSeamEdges.visible = true;
             allEdgeMaterials.push(leftSeamEdges.material);
             leftHalf.add(leftSeamEdges);
-
             scene.add(leftHalf);
 
-            // Create right half geometry (half cube)
             const rightGeometry = new THREE.BoxGeometry(0.5, 1, 1);
             rightHalf = new THREE.Group();
-
             const rightMesh = new THREE.Mesh(rightGeometry, cubeMaterial);
             rightMesh.position.x = 0.25;
 
-            // Custom edges for right half
             const rightEdgesGeometry = new THREE.BufferGeometry();
             const rightVertices = new Float32Array([
-                // Right face edges
                 0.5, -0.5, -0.5,  0.5, 0.5, -0.5,
                 0.5, 0.5, -0.5,  0.5, 0.5, 0.5,
                 0.5, 0.5, 0.5,  0.5, -0.5, 0.5,
                 0.5, -0.5, 0.5,  0.5, -0.5, -0.5,
-                // Top edges (only from middle)
                 0, 0.5, -0.5,  0.5, 0.5, -0.5,
                 0, 0.5, 0.5,  0.5, 0.5, 0.5,
-                // Bottom edges (only from middle)
                 0, -0.5, -0.5,  0.5, -0.5, -0.5,
                 0, -0.5, 0.5,  0.5, -0.5, 0.5,
             ]);
             rightEdgesGeometry.setAttribute('position', new THREE.BufferAttribute(rightVertices, 3));
             const rightLines = new THREE.LineSegments(rightEdgesGeometry, edgesMaterial);
-
             rightHalf.add(rightMesh);
             rightHalf.add(rightLines);
 
-            // Create middle seam edges for right half (only visible when split)
             const rightSeamGeometry = new THREE.BufferGeometry();
             const rightSeamVertices = new Float32Array([
-                // Front face vertical edge (middle seam - right side)
                 0, -0.5, 0.5,  0, 0.5, 0.5,
-                // Back face vertical edge (middle seam - right side)
                 0, -0.5, -0.5,  0, 0.5, -0.5,
-                // Top face edge (middle seam - right side)
                 0, 0.5, -0.5,  0, 0.5, 0.5,
-                // Bottom face edge (middle seam - right side)
                 0, -0.5, -0.5,  0, -0.5, 0.5,
             ]);
             rightSeamGeometry.setAttribute('position', new THREE.BufferAttribute(rightSeamVertices, 3));
             rightSeamEdges = new THREE.LineSegments(rightSeamGeometry, edgesMaterial);
-            rightSeamEdges.material = edgesMaterial.clone(); // Clone material for independent opacity
+            rightSeamEdges.material = edgesMaterial.clone();
             rightSeamEdges.material.transparent = true;
             rightSeamEdges.material.opacity = 0;
-            rightSeamEdges.visible = true; // Always visible, but opacity controlled
+            rightSeamEdges.visible = true;
             allEdgeMaterials.push(rightSeamEdges.material);
             rightHalf.add(rightSeamEdges);
-
             scene.add(rightHalf);
 
             animate();
@@ -543,7 +510,6 @@
         function animate() {
             requestAnimationFrame(animate);
 
-            // Smooth animation
             const speed = 0.08;
             if (Math.abs(targetProgress - animationProgress) > 0.001) {
                 animationProgress += (targetProgress - animationProgress) * speed;
@@ -551,18 +517,15 @@
                 animationProgress = targetProgress;
             }
 
-            // Update positions - split horizontally
             const splitDistance = 0.8 * animationProgress;
             leftHalf.position.x = -splitDistance;
             rightHalf.position.x = splitDistance;
 
-            // Smoothly fade seam edges based on split progress
-            // Fade in from 0.05 to 0.3, fade out from 0.3 to 0.05
             let targetOpacity = 0;
             if (animationProgress < 0.05) {
                 targetOpacity = 0;
             } else if (animationProgress < 0.3) {
-                targetOpacity = (animationProgress - 0.05) / 0.25; // 0 to 1 over range 0.05-0.3
+                targetOpacity = (animationProgress - 0.05) / 0.25;
             } else {
                 targetOpacity = 1;
             }
@@ -574,43 +537,33 @@
                 rightSeamEdges.material.opacity = targetOpacity;
             }
 
-            // Day/Night theme transition based on split state
-            // Merged = Day (white bg, white cube, black edges)
-            // Split = Night (black bg, black cube, white edges)
-            const dayColor = { r: 245, g: 245, b: 245 }; // #f5f5f5
-            const nightColor = { r: 0, g: 0, b: 0 }; // #000000
+            const dayColor = { r: 245, g: 245, b: 245 };
+            const nightColor = { r: 0, g: 0, b: 0 };
 
-            // Interpolate background color (white to black)
             const bgR = Math.round(dayColor.r + (nightColor.r - dayColor.r) * animationProgress);
             const bgG = Math.round(dayColor.g + (nightColor.g - dayColor.g) * animationProgress);
             const bgB = Math.round(dayColor.b + (nightColor.b - dayColor.b) * animationProgress);
 
-            // Update cube material to match background (white to black)
             if (cubeMaterial) {
                 cubeMaterial.color.setRGB(bgR / 255, bgG / 255, bgB / 255);
             }
 
-            // Interpolate edge colors - OPPOSITE of background (black to white)
             const edgeR = Math.round(0 + (255 - 0) * animationProgress);
             const edgeG = Math.round(0 + (255 - 0) * animationProgress);
             const edgeB = Math.round(0 + (255 - 0) * animationProgress);
             const edgeColorHex = (edgeR << 16) | (edgeG << 8) | edgeB;
 
-            // Update all edge materials
             allEdgeMaterials.forEach(material => {
                 if (material) {
                     material.color.setHex(edgeColorHex);
                 }
             });
 
-            // Update entire left side background to match canvas
-            const leftSide = document.querySelector('.left-side');
-            if (leftSide) {
-                leftSide.style.backgroundColor = `rgb(${bgR}, ${bgG}, ${bgB})`;
+            const rightSide = document.querySelector('.right-side');
+            if (rightSide) {
+                rightSide.style.backgroundColor = `rgb(${bgR}, ${bgG}, ${bgB})`;
             }
 
-            // Update "Cubes" part of logo color - opposite of background for contrast
-            // "Half" stays red (#E60000)
             const cubesSpan = document.querySelector('.logo h1 .cubes');
             if (cubesSpan) {
                 cubesSpan.style.color = `rgb(${edgeR}, ${edgeG}, ${edgeB})`;
@@ -624,10 +577,8 @@
             targetProgress = isSplit ? 1 : 0;
         }
 
-        // Click handler
         document.getElementById('cubeContainer').addEventListener('click', toggleSplit);
 
-        // Initialize and auto-split on load
         init();
         setTimeout(() => {
             toggleSplit();
